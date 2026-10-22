@@ -6,6 +6,7 @@ import { BadgeCheck, Volume2 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { BrandIcon } from "@/components/brand-icons";
+import { KyotoDuskBanner } from "@/components/kyoto-dusk-banner";
 import { SpotifyStatus } from "@/components/spotify-status";
 import { siteConfig } from "@/config/site";
 
@@ -53,38 +54,13 @@ function SocialNote({ text }: { text: string }) {
 }
 
 function Banner() {
-  const { hero } = siteConfig;
-
   return (
     <div className="col-[container] px-2.5 pt-1.5">
       <div
         data-testid="hero-banner"
         className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-[2px] bg-muted md:h-[260px]"
       >
-        {hero.banner ? (
-          <Image
-            src={hero.banner}
-            alt={hero.bannerAlt}
-            fill
-            preload
-            sizes="(max-width: 767px) calc(100vw - 20px), 748px"
-            className="object-cover outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
-          />
-        ) : (
-          <>
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 opacity-60"
-              style={{
-                backgroundImage:
-                  "repeating-linear-gradient(-45deg, transparent 0 7px, var(--hatch) 7px 8px)",
-              }}
-            />
-            <span className="relative px-4 text-center font-mono text-xs leading-relaxed text-muted-foreground">
-              {hero.bannerCaption}
-            </span>
-          </>
-        )}
+        <KyotoDuskBanner />
       </div>
     </div>
   );

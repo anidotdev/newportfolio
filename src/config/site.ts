@@ -15,9 +15,6 @@ export type HeroConfig = {
   name: string;
   titles: string[];
   nameAudio?: string;
-  banner: string | null;
-  bannerAlt: string;
-  bannerCaption: string;
   avatar: string | null;
   avatarAlt: string;
   avatarInitials: string;
@@ -113,10 +110,6 @@ export const siteConfig: SiteConfig = {
     titles: ["Indie Hacker.", "Design Engineer.", "B.Tech CSE student."],
     // TODO: add a pronunciation clip, then set this to its public URL.
     nameAudio: undefined,
-    // TODO: drop public/images/banner.jpg here and use "/images/banner.jpg".
-    banner: null,
-    bannerAlt: "Samiran De's studio desk and projects.",
-    bannerCaption: "Banner · 1960×520 · public/images/banner.jpg",
     // TODO: drop public/images/avatar.jpg here and use "/images/avatar.jpg".
     avatar: null,
     avatarAlt: "Samiran De",

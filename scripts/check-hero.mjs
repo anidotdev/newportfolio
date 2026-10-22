@@ -37,9 +37,16 @@ const context = await browser.newContext({
 });
 const page = await context.newPage();
 const consoleErrors = [];
+const hydrationWarnings = [];
 
 page.on("console", (message) => {
   if (message.type() === "error") consoleErrors.push(message.text());
+  if (
+    message.type() === "warning" &&
+    /hydrat|did not match|server rendered/i.test(message.text())
+  ) {
+    hydrationWarnings.push(message.text());
+  }
 });
 page.on("pageerror", (error) => consoleErrors.push(error.message));
 
@@ -176,6 +183,112 @@ async function waitForOneVisibleTitle() {
     );
     return visible.length === 1;
   });
+}
+
+async function assertKyotoDusk(width) {
+  const banner = page.getByTestId("hero-banner");
+  const scene = page.getByTestId("kyoto-dusk");
+  const canvas = scene.locator("canvas");
+
+  await page.waitForFunction(() => {
+    const element = document.querySelector('[data-testid="kyoto-dusk"] canvas');
+    return Boolean(element && element.width > 0 && element.height > 0);
+  });
+
+  assert.equal(await scene.count(), 1, `kyoto dusk wrapper at ${width}`);
+  assert.equal(await canvas.count(), 1, `kyoto dusk canvas at ${width}`);
+  assert.equal(
+    await scene.getAttribute("aria-hidden"),
+    "true",
+    `kyoto dusk should be decorative at ${width}`,
+  );
+
+  const bannerText = (await banner.textContent())?.trim() ?? "";
+  assert.equal(bannerText, "", `banner placeholder text should be gone at ${width}`);
+  assert.equal(
+    await banner.locator('[style*="repeating-linear-gradient"]').count(),
+    0,
+    `banner hatch placeholder should be gone at ${width}`,
+  );
+
+  const bannerBox = await box(banner);
+  const sceneBox = await box(scene);
+  const canvasBox = await box(canvas);
+  assert.equal(
+    Math.round(sceneBox.width),
+    Math.round(bannerBox.width),
+    `scene should fill banner width at ${width}`,
+  );
+  assert.equal(
+    Math.round(sceneBox.height),
+    Math.round(bannerBox.height),
+    `scene should fill banner height at ${width}`,
+  );
+  assert.ok(
+    Math.abs(canvasBox.width / canvasBox.height - 2) < 0.02,
+    `scene should keep its 200x100 shape at ${width}`,
+  );
+  assert.ok(
+    canvasBox.height >= bannerBox.height - 1,
+    `scene should cover banner height at ${width}`,
+  );
+  assert.ok(
+    Math.abs(
+      canvasBox.y + canvasBox.height / 2 - (bannerBox.y + bannerBox.height / 2),
+    ) <= 1,
+    `scene should be centre-cropped at ${width}`,
+  );
+
+  const paint = await canvas.evaluate((element) => {
+    const style = getComputedStyle(element.closest('[data-testid="kyoto-dusk"]'));
+    const context = element.getContext("2d");
+    const pixels = context.getImageData(0, 0, element.width, element.height).data;
+    const colors = new Set();
+    let opaque = 0;
+
+    for (let index = 0; index < pixels.length; index += 4) {
+      if (pixels[index + 3] !== 0) opaque += 1;
+      if (index % (4 * 97) === 0) {
+        colors.add(
+          `${pixels[index]},${pixels[index + 1]},${pixels[index + 2]}`,
+        );
+      }
+    }
+
+    return {
+      pointerEvents: style.pointerEvents,
+      width: element.width,
+      height: element.height,
+      cssWidth: element.clientWidth,
+      dpr: window.devicePixelRatio,
+      opaque,
+      colorCount: colors.size,
+    };
+  });
+
+  assert.equal(
+    paint.pointerEvents,
+    "none",
+    `scene should not capture pointers at ${width}`,
+  );
+  assert.ok(paint.opaque > 0, `scene should paint pixels at ${width}`);
+  assert.ok(
+    paint.colorCount > 12,
+    `scene should use its palette at ${width}`,
+  );
+  assert.ok(
+    Math.abs(paint.width - paint.cssWidth * paint.dpr) <= 1,
+    `scene should respect devicePixelRatio at ${width}`,
+  );
+  assert.ok(
+    Math.abs(paint.height - paint.width / 2) <= 1,
+    `scene backing store should keep its 2:1 shape at ${width}`,
+  );
+
+  const firstFrame = await canvas.evaluate((element) => element.toDataURL());
+  await page.waitForTimeout(250);
+  const nextFrame = await canvas.evaluate((element) => element.toDataURL());
+  assert.notEqual(firstFrame, nextFrame, `scene should animate at ${width}`);
 }
 
 try {
@@ -340,6 +453,8 @@ try {
       Math.min(width, 768) - 20,
       `banner width at ${width}`,
     );
+
+    await assertKyotoDusk(width);
 
     const avatar = await box(page.getByTestId("hero-avatar"));
     const avatarSize = width >= 768 ? 160 : 96;
@@ -529,9 +644,45 @@ try {
   await assertSpotifyFits(390);
   await runAxe("dark mobile");
 
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.reload({ waitUntil: "networkidle" });
+  await page.evaluate(() => document.fonts.ready);
+  await waitForSpotifyStatus("Last played");
+  await page.waitForFunction(() => {
+    const element = document.querySelector('[data-testid="kyoto-dusk"] canvas');
+    return Boolean(element && element.width > 0 && element.height > 0);
+  });
+
+  const stillScene = page.getByTestId("kyoto-dusk");
+  const stillCanvas = stillScene.locator("canvas");
+  assert.equal(await stillCanvas.count(), 1, "reduced motion scene");
+  const stillPaint = await stillCanvas.evaluate((element) => {
+    const context = element.getContext("2d");
+    const pixels = context.getImageData(0, 0, element.width, element.height).data;
+    let opaque = 0;
+
+    for (let index = 0; index < pixels.length; index += 4) {
+      if (pixels[index + 3] !== 0) opaque += 1;
+    }
+
+    return { opaque, frame: element.toDataURL() };
+  });
+  assert.ok(stillPaint.opaque > 0, "reduced motion scene should paint a frame");
+
+  await page.waitForTimeout(400);
+  const heldFrame = await stillCanvas.evaluate((element) => element.toDataURL());
+  assert.equal(
+    heldFrame,
+    stillPaint.frame,
+    "reduced motion should hold one still frame",
+  );
+
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  assert.deepEqual(hydrationWarnings, [], "no hydration warnings");
   assert.deepEqual(consoleErrors, [], "console should have no errors");
   console.log(
-    "hero checks passed (1440, 1024, 768, 390; playing/last/failure; light/dark)",
+    "hero checks passed (1440, 1024, 768, 390; playing/last/failure; light/dark; kyoto dusk; reduced motion)",
   );
 } finally {
   await browser.close();

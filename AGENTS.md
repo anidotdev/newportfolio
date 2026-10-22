@@ -10,13 +10,14 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Portfolio — current state
 
-Homepage for **Samiran De**: sticky header, hero/profile with socials and a compact
-Spotify status row, and About with bio, tech stack, and a temporary next-sections spacer.
+Homepage for **Samiran De**: sticky header, hero/profile with a Kyoto Dusk banner,
+socials, a compact Spotify status row, and About with bio, tech stack, and a temporary
+next-sections spacer.
 
 ## Stack
 
 - Next.js `16.4.2` App Router, React `19.3.0`, TypeScript, Tailwind v4, pnpm.
-- `motion`, `next-themes`, `lucide-react`, shadcn/ui, `@icons-pack/react-simple-icons`, `cn`.
+- `motion`, `next-themes`, `lucide-react`, shadcn/ui, `@icons-pack/react-simple-icons`, `cn`, `ascii.rest`.
 - Fonts: Inter, Geist Mono, Instrument Serif, Caveat (`--font-hand`).
 - Playwright + `@axe-core/playwright`; Spotify credentials are server-only.
 
@@ -34,15 +35,15 @@ Spotify status row, and About with bio, tech stack, and a temporary next-section
 | `src/app/{layout,page}.tsx` | Fonts/provider; hero + About; blur sentinel |
 | `src/app/globals.css` | Tokens, `.hero-grid`, `.section-title`, reduced motion |
 | `src/components/{site-header,mobile-menu}.tsx` | Sticky header, mobile Sheet |
-| `src/components/hero.tsx` | Banner, avatar, identity/title, social row, Spotify placement |
+| `src/components/hero.tsx` | Banner frame, avatar, identity/title, social row, Spotify placement |
+| `src/components/kyoto-dusk-banner.tsx` | Decorative Kyoto Dusk canvas, centre-cropped in the banner |
 | `src/components/spotify-status.tsx` | Compact polling row, fallback, track link |
 | `src/components/about.tsx` | About rows, bio, tech stack, temporary spacer |
 | `src/components/section.tsx` | Full-bleed `SectionRow` and hatch `SectionSeparator` |
 | `src/components/tech-icons.tsx`, `icons/aws.tsx` | Brand glyph map and AWS glyph |
 | `src/config/site.ts` | Brand/nav, hero/socials, About, Spotify fallback/labels |
 | `src/lib/spotify.ts`, `app/api/spotify/route.ts` | Server token/track data and API |
-| `scripts/check-*.mjs`, `scripts/spotify-token.mjs` | Layout/a11y checks and token helper |
-| `docs/spotify-setup.md`, `.env.example` | Spotify setup and env template |
+| `scripts/check-*.mjs`, `scripts/spotify-token.mjs`, `docs/spotify-setup.md`, `.env.example` | Checks, token helper, setup, env template |
 
 ## Layout and tokens
 
@@ -54,6 +55,10 @@ Spotify status row, and About with bio, tech stack, and a temporary next-section
   768px shell directly below it (`-mt-2 pb-4`), aligned left. It uses a 16px Spotify green
   glyph, 12px mono muted status, a 12px hairline dash, and 14px track/artist text with 8px
   gaps; no card/background/border/caption, long text truncates, and the link opens Spotify.
+- Banner frame is `h-40 md:h-[260px]`; the 2:1 Kyoto Dusk canvas fills its width and is
+  centre-cropped vertically, behind the avatar. It is decorative and ignores pointers.
+- The canvas wrapper is `aria-hidden` and `pointer-events-none`; `ascii.rest` pauses off
+  screen/hidden, scales for `devicePixelRatio`, and holds one frame under reduced motion.
 - About rows are full-bleed; inner content caps at 768px with `px-5`; the shell overlay
   draws unbroken hairlines. About has four rows: heading, bio, tech, spacer.
 - When changing `--container-max`, keep hairlines, hatch separators, and full-bleed rows
@@ -72,9 +77,10 @@ Spotify status row, and About with bio, tech stack, and a temporary next-section
 - All copy, tech names, socials, and placeholders live in `src/config/site.ts`. The old
   profile information grid and its time/email/phone config are removed; do not reintroduce.
 - Bio is generic placeholder copy with one `https://example.com` link; replace it.
-- Add `public/images/banner.jpg` (1960x520) and `avatar.jpg`, then set
-  `hero.banner = "/images/banner.jpg"` and `avatar = "/images/avatar.jpg"`. Null renders
-  the caption and `SD` placeholder. Set `hero.nameAudio` to show pronunciation.
+- Banner art is `kyoto-dusk` from `ascii.rest/pieces/kyoto-dusk` (MIT, © bas3line),
+  mounted by `src/components/kyoto-dusk-banner.tsx` at its native 200×100, 15 fps. Do not
+  approximate, recolour, or screenshot it. `hero.avatar` is the only image setting; null
+  renders `SD`; set `hero.nameAudio` to show the pronunciation control.
 - Spotify credentials are server-only in `.env.local`: `SPOTIFY_CLIENT_ID`,
   `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REFRESH_TOKEN`. Missing/failed data renders the
   fallback track from `siteConfig.spotify.fallback` without claiming live playback.
@@ -87,14 +93,13 @@ Spotify status row, and About with bio, tech stack, and a temporary next-section
 
 ## Next: Projects section
 
-Build Projects below About in the same shell. Keep `#main-content`, `.hero-grid`, the
-hero/About contracts, and the temp spacer until replaced. Do not redesign header/hero.
-Add real routes only when nav destinations should work.
+Build Projects below About in the same shell, preserving `#main-content`, `.hero-grid`,
+the hero/About contracts, and the temp spacer. Do not redesign header/hero; add real
+routes only when nav destinations should work.
 
 ## Verification
 
-Last verified 2026-10-22: `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm check:header`,
-`pnpm check:hero`, and `pnpm check:about` pass. `check:hero` covers 1440/1024/768/390,
-removed info, social/Spotify placement, playing/last/failure, links, overflow, light/dark
-axe, and API stubs. `check:about` covers four rows, no old card/caption/art, tech order,
-spacer, and hairlines.
+Last verified 2026-10-22: `pnpm typecheck`, `pnpm lint`, `pnpm build`, and all three
+`check:*` scripts pass. `check:hero` covers 1440/1024/768/390, Kyoto Dusk canvas,
+palette, animation/reduced motion, placeholder removal, Spotify states, overflow/axe/stubs.
+`check:about` covers four rows, no old card/caption/art, tech order, spacer, and hairlines.
