@@ -9,7 +9,7 @@ page.on("console", (message) => {
 });
 
 try {
-  await page.goto("http://127.0.0.1:3000", { waitUntil: "networkidle" });
+  await page.goto("http://localhost:3000", { waitUntil: "networkidle" });
   await page.evaluate(() => document.fonts.ready);
 
   for (const width of [1440, 1024, 768, 390]) {
@@ -25,7 +25,7 @@ try {
       `header should span the viewport at ${width}`,
     );
 
-    const shell = await page.locator("main").boundingBox();
+    const shell = await page.locator("header > div").boundingBox();
     assert.ok(shell, `container missing at ${width}`);
     assert.ok(shell.width <= 1000, `container wider than 1000px at ${width}`);
 

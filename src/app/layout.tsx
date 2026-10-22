@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { Geist_Mono, Instrument_Serif, Inter } from "next/font/google";
+import {
+  Caveat,
+  Geist_Mono,
+  Instrument_Serif,
+  Inter,
+} from "next/font/google";
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { siteConfig } from "@/config/site";
@@ -26,6 +31,13 @@ const instrumentSerif = Instrument_Serif({
   display: "swap",
 });
 
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: "500",
+  variable: "--font-caveat",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: `${siteConfig.name} — Portfolio`,
   description: siteConfig.description,
@@ -36,7 +48,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${geistMono.variable} ${instrumentSerif.variable}`}
+      className={`${inter.variable} ${geistMono.variable} ${instrumentSerif.variable} ${caveat.variable}`}
     >
       <body className="min-h-dvh bg-background text-foreground">
         <ThemeProvider

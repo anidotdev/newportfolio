@@ -25,10 +25,14 @@
   --color-ring: var(--ring);
   --color-hairline: var(--hairline);
   --color-chip: var(--chip);
+  --color-surface-subtle: var(--surface-subtle);
+  --color-surface-strong: var(--surface-strong);
+  --color-surface-hover: var(--surface-hover);
 
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
   --font-brand: var(--font-instrument-serif);
+  --font-hand: var(--font-caveat);
   --font-heading: var(--font-inter);
 
   --radius-sm: calc(var(--radius) * 0.6);
@@ -61,6 +65,11 @@
   --ring: #52525b;
   --hairline: rgb(0 0 0 / 10%);
   --chip: #f4f4f5;
+  --surface-subtle: color-mix(in srgb, var(--foreground) 4%, transparent);
+  --surface-strong: color-mix(in srgb, var(--foreground) 5%, transparent);
+  --surface-hover: color-mix(in srgb, var(--foreground) 8%, transparent);
+  --hatch: color-mix(in srgb, var(--hairline) 60%, transparent);
+  --blur-veil: color-mix(in srgb, var(--background) 60%, transparent);
 
   color-scheme: light;
 }
@@ -86,6 +95,11 @@
   --ring: #a1a1aa;
   --hairline: rgb(255 255 255 / 10%);
   --chip: #171717;
+  --surface-subtle: color-mix(in srgb, var(--foreground) 4%, transparent);
+  --surface-strong: color-mix(in srgb, var(--foreground) 5%, transparent);
+  --surface-hover: color-mix(in srgb, var(--foreground) 8%, transparent);
+  --hatch: color-mix(in srgb, var(--hairline) 60%, transparent);
+  --blur-veil: color-mix(in srgb, var(--background) 60%, transparent);
 
   color-scheme: dark;
 }
@@ -98,10 +112,30 @@
   html {
     @apply font-sans antialiased;
     scroll-padding-top: 4rem;
+    overflow-x: clip;
   }
 
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .hero-grid {
+    display: grid;
+    grid-template-columns:
+      [full-start container-start] minmax(0, 1fr)
+      [container-end full-end];
+  }
+
+  @media (min-width: 1000px) {
+    .hero-grid {
+      grid-template-columns:
+        [full-start] minmax(0, 1fr)
+        [container-start] var(--container-max)
+        [container-end] minmax(0, 1fr)
+        [full-end];
+    }
   }
 }
 
