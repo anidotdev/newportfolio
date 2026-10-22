@@ -58,6 +58,53 @@ export type HeroConfig = {
   nextSectionsNote: string;
 };
 
+export type BioSegment = {
+  text: string;
+  href?: string;
+};
+
+export type TechIconKey =
+  | "python"
+  | "go"
+  | "javascript"
+  | "cpp"
+  | "aws"
+  | "google-cloud";
+
+export type TechItem = {
+  name: string;
+  icon: TechIconKey;
+};
+
+export type AboutConfig = {
+  heading: string;
+  bio: BioSegment[][];
+  techLabel: string;
+  techStackAriaLabel: string;
+  techStack: TechItem[];
+};
+
+export type SpotifyTrack = {
+  title: string;
+  artists: string[];
+  url: string;
+  albumArt: string | null;
+};
+
+export type SpotifyConfig = {
+  fallback: SpotifyTrack;
+  labels: {
+    lastPlayed: string;
+    nowPlaying: string;
+    synced: string;
+    notSynced: string;
+    loading: string;
+    by: string;
+    lastPlayedAria: string;
+    nowPlayingAria: string;
+  };
+};
+
 type SiteConfig = {
   name: string;
   description: string;
@@ -70,6 +117,8 @@ type SiteConfig = {
     starCount?: number;
   };
   hero: HeroConfig;
+  about: AboutConfig;
+  spotify: SpotifyConfig;
 };
 
 export const siteConfig: SiteConfig = {
@@ -142,6 +191,62 @@ export const siteConfig: SiteConfig = {
     },
     nextSectionsLabel: "Next sections",
     nextSectionsNote: "next sections go here",
+  },
+  about: {
+    heading: "About",
+    // TODO: replace with real bio.
+    bio: [
+      [
+        {
+          text: "Use this space for a short introduction: what you work on, how you approach problems, and the details you want a visitor to know first.",
+        },
+      ],
+      [
+        {
+          text: "This bullet can explain how you collaborate and what you are exploring next. Replace the ",
+        },
+        {
+          text: "sample link",
+          href: "https://example.com",
+        },
+        {
+          text: " with a real project, profile, or article.",
+        },
+      ],
+      [
+        {
+          text: "A final short paragraph can cover interests outside work or a note about this site. Keep the copy specific, useful, and easy to replace.",
+        },
+      ],
+    ],
+    techLabel: "TECH STACK",
+    techStackAriaLabel: "Tech stack",
+    techStack: [
+      { name: "Python", icon: "python" },
+      { name: "Go", icon: "go" },
+      { name: "JavaScript", icon: "javascript" },
+      { name: "C++", icon: "cpp" },
+      { name: "AWS", icon: "aws" },
+      { name: "Google Cloud", icon: "google-cloud" },
+    ],
+  },
+  spotify: {
+    fallback: {
+      title: "Track title",
+      artists: ["Artist name"],
+      url: "https://open.spotify.com",
+      albumArt: null,
+    },
+    labels: {
+      lastPlayed: "Last played",
+      nowPlaying: "Now playing",
+      synced: "SYNCED",
+      notSynced: "NOT SYNCED",
+      loading: "Loading Spotify",
+      by: "by",
+      lastPlayedAria: "Last played on Spotify",
+      nowPlayingAria: "Now playing on Spotify",
+    },
   },
 };
 

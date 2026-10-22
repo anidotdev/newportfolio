@@ -28,6 +28,13 @@
   --color-surface-subtle: var(--surface-subtle);
   --color-surface-strong: var(--surface-strong);
   --color-surface-hover: var(--surface-hover);
+  --color-brand-python: var(--brand-python);
+  --color-brand-go: var(--brand-go);
+  --color-brand-javascript: var(--brand-javascript);
+  --color-brand-cpp: var(--brand-cpp);
+  --color-brand-aws: var(--brand-aws);
+  --color-brand-google-cloud: var(--brand-google-cloud);
+  --color-spotify: var(--spotify-playing);
 
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
@@ -70,6 +77,13 @@
   --surface-hover: color-mix(in srgb, var(--foreground) 8%, transparent);
   --hatch: color-mix(in srgb, var(--hairline) 60%, transparent);
   --blur-veil: color-mix(in srgb, var(--background) 60%, transparent);
+  --brand-python: #3776ab;
+  --brand-go: #007d9c;
+  --brand-javascript: #8a6d00;
+  --brand-cpp: #00599c;
+  --brand-aws: var(--foreground);
+  --brand-google-cloud: #1a73e8;
+  --spotify-playing: #1db954;
 
   color-scheme: light;
 }
@@ -100,6 +114,13 @@
   --surface-hover: color-mix(in srgb, var(--foreground) 8%, transparent);
   --hatch: color-mix(in srgb, var(--hairline) 60%, transparent);
   --blur-veil: color-mix(in srgb, var(--background) 60%, transparent);
+  --brand-python: #4b8bbe;
+  --brand-go: #00add8;
+  --brand-javascript: #f7df1e;
+  --brand-cpp: #659ad2;
+  --brand-aws: #ff9900;
+  --brand-google-cloud: #4285f4;
+  --spotify-playing: #1db954;
 
   color-scheme: dark;
 }
@@ -136,6 +157,13 @@
         [container-end] minmax(0, 1fr)
         [full-end];
     }
+  }
+
+  .section-title {
+    font-family: var(--font-hand);
+    font-size: 30px;
+    line-height: 1;
+    color: var(--foreground);
   }
 }
 
