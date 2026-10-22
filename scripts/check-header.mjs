@@ -27,7 +27,11 @@ try {
 
     const shell = await page.locator("header > div").boundingBox();
     assert.ok(shell, `container missing at ${width}`);
-    assert.ok(shell.width <= 1000, `container wider than 1000px at ${width}`);
+    assert.equal(
+      Math.round(shell.width),
+      Math.min(width, 768),
+      `container width at ${width}`,
+    );
 
     const metrics = await page.evaluate(() => ({
       clientWidth: document.documentElement.clientWidth,

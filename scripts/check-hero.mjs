@@ -92,6 +92,11 @@ try {
       width >= 768 ? 260 : 160,
       `banner height at ${width}`,
     );
+    assert.equal(
+      Math.round(banner.width),
+      Math.min(width, 768) - 20,
+      `banner width at ${width}`,
+    );
 
     const avatar = await box(page.getByTestId("hero-avatar"));
     const avatarSize = width >= 768 ? 160 : 96;

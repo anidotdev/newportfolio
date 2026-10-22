@@ -236,7 +236,7 @@ try {
   const sectionBox = await box(page.getByTestId("about-section"));
   const shell = page.getByTestId("about-shell");
   const shellBox = await box(shell);
-  assert.equal(Math.round(shellBox.width), 1000, "shell width at 1440");
+  assert.equal(Math.round(shellBox.width), 768, "shell width at 1440");
   assert.equal(Math.round(shellBox.height), Math.round(sectionBox.height));
   const shellBorders = await shell.evaluate((element) => {
     const style = getComputedStyle(element);
@@ -305,10 +305,22 @@ try {
       `bio line-height at ${width}`,
     );
 
+    const currentShellBox = await box(page.getByTestId("about-shell"));
+    assert.equal(
+      Math.round(currentShellBox.width),
+      Math.min(width, 768),
+      `shell width at ${width}`,
+    );
+
     const currentCard = await waitForCard();
     const currentCardBox = await box(currentCard);
     assert.equal(Math.round(currentCardBox.height), 112, `card height at ${width}`);
     assert.ok(currentCardBox.width <= 480, `card width at ${width}`);
+    assert.equal(
+      Math.round(currentCardBox.x + currentCardBox.width / 2),
+      Math.round(width / 2),
+      `card center at ${width}`,
+    );
 
     const titleSize = await currentCard
       .locator("p")

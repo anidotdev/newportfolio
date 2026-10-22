@@ -46,10 +46,14 @@ Spotify last-played card, tech stack, and a temporary next-sections spacer.
 
 ## Layout and tokens
 
-- `--container-max: 1000px`; header inner, `.hero-grid` container track, and About shell align.
-- Full-bleed rows use `.hero-grid` named lines (`full` / `container`), never `100vw`.
-- About rows are full-bleed; inner content is 1000px with `px-5`. The shell overlay
+- `--container-max: 768px`; header inner, `.hero-grid` container track, and About shell align.
+- `.hero-grid` switches at `min-width: 768px` to `[full-start] 1fr [container-start]
+  var(--container-max) [container-end] 1fr [full-end]`. Below it, both named lines share
+  one fluid column. Full-bleed elements use `col-[full]`; central content uses `col-[container]`.
+- About rows are full-bleed; inner content caps at 768px with `px-5`. The shell overlay
   draws unbroken container edge hairlines through every row.
+- When changing `--container-max`, keep hairlines, hatch separators, and full-bleed rows
+  edge-to-edge; narrow only the central track. Never use `100vw` for full-bleed elements.
 - Hatch separators are 32px full-bleed with border-y. Heading row 48/56px; the tech row
   uses `bordered={false}` because the bottom separator supplies its boundary.
 - Bio 15/26px mobile, 16/30px desktop, max 75ch; 5px muted bullets; underlined links.

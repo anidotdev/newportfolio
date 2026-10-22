@@ -207,7 +207,7 @@ function Banner() {
             alt={hero.bannerAlt}
             fill
             preload
-            sizes="(max-width: 1000px) calc(100vw - 20px), 980px"
+            sizes="(max-width: 767px) calc(100vw - 20px), 748px"
             className="object-cover outline outline-1 -outline-offset-1 outline-black/10 dark:outline-white/10"
           />
         ) : (

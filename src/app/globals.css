@@ -49,7 +49,7 @@
 }
 
 :root {
-  --container-max: 1000px;
+  --container-max: 768px;
   --radius: 0.625rem;
 
   --background: #ffffff;
@@ -149,7 +149,7 @@
       [container-end full-end];
   }
 
-  @media (min-width: 1000px) {
+  @media (min-width: 768px) {
     .hero-grid {
       grid-template-columns:
         [full-start] minmax(0, 1fr)
