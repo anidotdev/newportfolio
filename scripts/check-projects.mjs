@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "playwright";
 
+import {
+  groupProjects,
+  INITIAL_VISIBLE_PROJECTS,
+} from "../src/lib/projects.mjs";
+
 const BASE_URL = "http://localhost:3000";
 const EXPECTED = [
   {
@@ -19,7 +24,39 @@ const EXPECTED = [
     period: "MM.YYYY – ∞",
     hasLink: false,
   },
+  {
+    name: "Placeholder project four",
+    period: "MM.YYYY – ∞",
+    hasLink: false,
+  },
+  {
+    name: "Placeholder project five",
+    period: "MM.YYYY",
+    hasLink: true,
+  },
 ];
+
+assert.equal(INITIAL_VISIBLE_PROJECTS, 3);
+assert.deepEqual(groupProjects([]), {
+  visible: [],
+  remaining: [],
+  hasMore: false,
+});
+assert.deepEqual(groupProjects([1, 2, 3]), {
+  visible: [1, 2, 3],
+  remaining: [],
+  hasMore: false,
+});
+assert.deepEqual(groupProjects([1, 2, 3, 4]), {
+  visible: [1, 2, 3],
+  remaining: [4],
+  hasMore: true,
+});
+assert.equal(
+  groupProjects([1, 2, 3]).hasMore,
+  false,
+  "show-more control must be hidden for three projects",
+);
 
 const lastPlayed = {
   ok: true,
@@ -133,7 +170,11 @@ try {
   );
 
   const rows = projects.getByTestId("section-row");
-  assert.equal(await rows.count(), EXPECTED.length + 1, "heading row plus projects");
+  assert.equal(
+    await rows.count(),
+    EXPECTED.length + 2,
+    "heading row, projects, and show-more row",
+  );
   assert.equal(
     await projects.getByTestId("project-title").count(),
     EXPECTED.length,
@@ -152,7 +193,7 @@ try {
 
   const icons = projects.getByTestId("project-icon");
   assert.equal(await icons.count(), EXPECTED.length, "project icons");
-  for (let index = 0; index < EXPECTED.length; index += 1) {
+  for (let index = 0; index < INITIAL_VISIBLE_PROJECTS; index += 1) {
     const iconBox = await box(icons.nth(index));
     assert.equal(Math.round(iconBox.width), 32, "icon tile width");
     assert.equal(Math.round(iconBox.height), 32, "icon tile height");
@@ -170,9 +211,103 @@ try {
     assert.notEqual(iconStyle.background, "rgba(0, 0, 0, 0)", "icon tile surface");
   }
 
+  const toggle = page.getByTestId("projects-toggle");
+  const more = page.getByTestId("projects-more");
+  await toggle.waitFor();
+  assert.equal(await toggle.count(), 1, "show-more control should render");
+  assert.equal(await toggle.innerText(), "Show more");
+  assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+  assert.equal(await toggle.getAttribute("aria-controls"), "projects-more");
+  assert.equal(
+    await more.getAttribute("aria-hidden"),
+    "true",
+    "additional projects should start hidden",
+  );
+  assert.notEqual(
+    await more.getAttribute("inert"),
+    null,
+    "additional projects should start inert",
+  );
+  assert.equal(
+    Math.round(await panelHeight(more)),
+    0,
+    "additional projects should have no height initially",
+  );
+
+  const toggleBox = await box(toggle);
+  const shellBox = await box(page.getByTestId("projects-shell"));
+  assert.equal(Math.round(toggleBox.height), 38, "show-more height");
+  assert.equal(
+    Math.round(toggleBox.x + toggleBox.width / 2),
+    Math.round(shellBox.x + shellBox.width / 2),
+    "show-more control should be centered",
+  );
+  assert.ok(
+    toggleBox.width < shellBox.width - 40,
+    "show-more control should not stretch to the container width",
+  );
+
+  const thirdRowBox = await box(rows.nth(INITIAL_VISIBLE_PROJECTS));
+  assert.equal(
+    Math.round(toggleBox.y - (thirdRowBox.y + thirdRowBox.height)),
+    20,
+    "show-more control should sit 20px below the last visible row",
+  );
+  const projectsBox = await box(projects);
+  assert.ok(
+    projectsBox.y + projectsBox.height - (toggleBox.y + toggleBox.height) >= 20,
+    "show-more control should have bottom breathing room",
+  );
+
+  const toggleStyle = await toggle.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      radius: style.borderRadius,
+      paddingLeft: style.paddingLeft,
+      paddingRight: style.paddingRight,
+      fontSize: style.fontSize,
+      fontWeight: style.fontWeight,
+      gap: style.gap,
+      border: style.borderTopWidth,
+      background: style.backgroundColor,
+    };
+  });
+  assert.equal(toggleStyle.radius, "9px", "show-more radius");
+  assert.equal(toggleStyle.paddingLeft, "16px", "show-more left padding");
+  assert.equal(toggleStyle.paddingRight, "16px", "show-more right padding");
+  assert.equal(toggleStyle.fontSize, "16px", "show-more text size");
+  assert.equal(toggleStyle.fontWeight, "600", "show-more text weight");
+  assert.equal(toggleStyle.gap, "10px", "show-more icon gap");
+  assert.equal(toggleStyle.border, "1px", "show-more hairline");
+  assert.notEqual(
+    toggleStyle.background,
+    "rgba(0, 0, 0, 0)",
+    "show-more should have a surface",
+  );
+
+  const toggleIcon = toggle.locator("svg");
+  assert.equal(await toggleIcon.count(), 1, "show-more chevron");
+  const toggleIconBox = await box(toggleIcon);
+  assert.equal(Math.round(toggleIconBox.width), 16, "show-more chevron width");
+  assert.equal(Math.round(toggleIconBox.height), 16, "show-more chevron height");
+  const toggleLabelBox = await box(toggle.locator("span").first());
+  assert.equal(
+    Math.round(toggleIconBox.x - (toggleLabelBox.x + toggleLabelBox.width)),
+    10,
+    "show-more label-to-chevron gap",
+  );
+  const initialChevron = await toggleIcon.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { rotate: style.rotate, transform: style.transform };
+  });
+
   const links = projects.getByTestId("project-link");
   const disclosures = projects.getByTestId("project-disclosure");
-  assert.equal(await links.count(), 2, "only projects with URLs show a link");
+  assert.equal(
+    await links.count(),
+    EXPECTED.filter((project) => project.hasLink).length,
+    "only projects with URLs show a link",
+  );
   assert.equal(await disclosures.count(), EXPECTED.length, "disclosure controls");
   assert.equal(
     await rows.nth(3).getByTestId("project-link").count(),
@@ -351,6 +486,60 @@ try {
   await firstTitle.click();
   await page.waitForTimeout(200);
 
+  assert.equal(
+    await disclosures.nth(0).getAttribute("aria-expanded"),
+    "true",
+    "first project should be open before showing more",
+  );
+  await toggle.click();
+  await page.waitForTimeout(250);
+  assert.equal(await toggle.innerText(), "Show less");
+  assert.equal(await toggle.getAttribute("aria-expanded"), "true");
+  assert.equal(await more.getAttribute("aria-hidden"), "false");
+  assert.equal(await more.getAttribute("inert"), null);
+  assert.ok((await panelHeight(more)) > 0, "additional projects should expand");
+  assert.equal(
+    await disclosures.nth(0).getAttribute("aria-expanded"),
+    "true",
+    "show more must not toggle a project detail",
+  );
+
+  const expandedChevron = await toggleIcon.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return { rotate: style.rotate, transform: style.transform };
+  });
+  assert.notDeepEqual(expandedChevron, initialChevron, "chevron should reverse");
+  assert.ok(
+    expandedChevron.rotate === "180deg" ||
+      expandedChevron.transform.includes("-1"),
+    "chevron should point upward when expanded",
+  );
+
+  for (
+    let index = INITIAL_VISIBLE_PROJECTS;
+    index < EXPECTED.length;
+    index += 1
+  ) {
+    const row = rows.nth(index + 1);
+    const rowBox = await box(row);
+    assert.ok(rowBox.height > 0, `project ${index + 1} should be revealed`);
+    assert.ok(
+      (await box(row.getByTestId("project-title"))).height > 0,
+      `project ${index + 1} title should be visible`,
+    );
+    const revealedIconBox = await box(row.getByTestId("project-icon"));
+    assert.equal(
+      Math.round(revealedIconBox.width),
+      32,
+      `revealed icon width for project ${index + 1}`,
+    );
+    assert.equal(
+      Math.round(revealedIconBox.height),
+      32,
+      `revealed icon height for project ${index + 1}`,
+    );
+  }
+
   for (const width of [1440, 1024, 768, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.waitForTimeout(250);
@@ -364,18 +553,39 @@ try {
     );
 
     const currentRows = projects.getByTestId("section-row");
-    assert.equal(await currentRows.count(), 4, `row count at ${width}`);
-    for (let index = 0; index < 4; index += 1) {
+    assert.equal(
+      await currentRows.count(),
+      EXPECTED.length + 2,
+      `row count at ${width}`,
+    );
+    for (let index = 0; index < EXPECTED.length + 2; index += 1) {
       const rowBox = await box(currentRows.nth(index));
       assert.equal(Math.round(rowBox.width), width, `row width at ${width}`);
       assert.equal(
         await currentRows
           .nth(index)
           .evaluate((element) => getComputedStyle(element).borderBottomWidth),
-        "1px",
+        index === EXPECTED.length + 1 ? "0px" : "1px",
         `row hairline at ${index} at ${width}`,
       );
     }
+
+    const currentToggleBox = await box(toggle);
+    assert.equal(
+      Math.round(currentToggleBox.x + currentToggleBox.width / 2),
+      Math.round(shell.x + shell.width / 2),
+      `show-more should stay centered at ${width}`,
+    );
+    assert.ok(
+      currentToggleBox.width < shell.width - 40,
+      `show-more should not stretch at ${width}`,
+    );
+    const lastRowBox = await box(currentRows.nth(EXPECTED.length));
+    assert.equal(
+      Math.round(currentToggleBox.y - (lastRowBox.y + lastRowBox.height)),
+      20,
+      `show-more should follow the last expanded row at ${width}`,
+    );
 
     const projectRow = currentRows.nth(1);
     const iconBox = await box(projectRow.getByTestId("project-icon"));
@@ -403,6 +613,55 @@ try {
   }
 
   await page.setViewportSize({ width: 390, height: 900 });
+  await toggle.click();
+  await page.waitForTimeout(250);
+  assert.equal(await toggle.innerText(), "Show more");
+  assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+  assert.equal(await more.getAttribute("aria-hidden"), "true");
+  assert.notEqual(await more.getAttribute("inert"), null);
+  assert.equal(
+    Math.round(await panelHeight(more)),
+    0,
+    "show less should collapse the additional projects",
+  );
+  assert.equal(
+    await disclosures.nth(0).getAttribute("aria-expanded"),
+    "true",
+    "show less must not toggle a project detail",
+  );
+  const collapsedToggleBox = await box(toggle);
+  const collapsedThirdRowBox = await box(rows.nth(INITIAL_VISIBLE_PROJECTS));
+  assert.equal(
+    Math.round(
+      collapsedToggleBox.y -
+        (collapsedThirdRowBox.y + collapsedThirdRowBox.height),
+    ),
+    20,
+    "collapsed show-more should sit below the third project",
+  );
+  await assertNoOverflow("390 collapsed");
+
+  await page.getByTestId("project-disclosure").nth(2).focus();
+  await page.keyboard.press("Tab");
+  assert.equal(
+    await page.evaluate(() => document.activeElement?.getAttribute("data-testid")),
+    "projects-toggle",
+    "Tab should reach the show-more control",
+  );
+  assert.notEqual(
+    await page.evaluate(() => getComputedStyle(document.activeElement).boxShadow),
+    "none",
+    "keyboard focus should be visible on the show-more control",
+  );
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(250);
+  assert.equal(await toggle.innerText(), "Show less", "Enter should expand");
+  assert.equal(await toggle.getAttribute("aria-expanded"), "true");
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(250);
+  assert.equal(await toggle.innerText(), "Show more", "Space should collapse");
+  assert.equal(await toggle.getAttribute("aria-expanded"), "false");
+
   await page.evaluate(() => {
     const long = "Placeholder".repeat(12);
     const title = document.querySelector('[data-testid="project-title"] button');
@@ -430,6 +689,9 @@ try {
     .locator("span")
     .first()
     .evaluate((element) => getComputedStyle(element).borderTopColor);
+  const darkToggleBackground = await toggle.evaluate(
+    (element) => getComputedStyle(element).backgroundColor,
+  );
 
   await page.getByRole("button", { name: /Switch to light theme/ }).click();
   await page.waitForFunction(() =>
@@ -447,7 +709,22 @@ try {
     lightTagBorder,
     "project hairline should follow the theme",
   );
+  const lightToggleBackground = await toggle.evaluate(
+    (element) => getComputedStyle(element).backgroundColor,
+  );
+  assert.notEqual(
+    darkToggleBackground,
+    lightToggleBackground,
+    "show-more surface should follow the theme",
+  );
   await runAxe("light desktop");
+  await toggle.click();
+  await page.waitForTimeout(250);
+  assert.equal(await toggle.innerText(), "Show less");
+  await runAxe("light desktop expanded");
+  await toggle.click();
+  await page.waitForTimeout(250);
+  assert.equal(await toggle.innerText(), "Show more");
 
   await page.setViewportSize({ width: 390, height: 900 });
   await page.waitForTimeout(250);
@@ -478,6 +755,33 @@ try {
     "reduced motion duration",
   );
 
+  const reducedMore = page.getByTestId("projects-more");
+  const reducedToggle = page.getByTestId("projects-toggle");
+  const reducedMoreMotion = await reducedMore.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      property: style.transitionProperty,
+      duration: style.transitionDuration,
+    };
+  });
+  assert.equal(
+    reducedMoreMotion.property,
+    "none",
+    "reduced motion show-more transition",
+  );
+  assert.ok(
+    Number.parseFloat(reducedMoreMotion.duration) <= 0.01,
+    "reduced motion show-more duration",
+  );
+  await reducedToggle.click();
+  await page.waitForTimeout(50);
+  assert.equal(await reducedToggle.innerText(), "Show less");
+  assert.ok((await panelHeight(reducedMore)) > 0);
+  await reducedToggle.click();
+  await page.waitForTimeout(50);
+  assert.equal(await reducedToggle.innerText(), "Show more");
+  assert.equal(Math.round(await panelHeight(reducedMore)), 0);
+
   const reducedDisclosures = page.getByTestId("project-disclosure");
   await page
     .getByTestId("project-title")
@@ -497,7 +801,7 @@ try {
   await page.emulateMedia({ reducedMotion: "no-preference" });
   assert.deepEqual(consoleErrors, [], "console should have no errors");
   console.log(
-    "projects checks passed (1440, 1024, 768, 390; accordion; keyboard; themes; reduced motion)",
+    "projects checks passed (1440, 1024, 768, 390; show more/less; accordion; keyboard; themes; reduced motion)",
   );
 } finally {
   await browser.close();

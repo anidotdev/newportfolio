@@ -138,7 +138,7 @@ try {
     "search should show two keyboard chips",
   );
 
-  await page.getByRole("button", { name: "More" }).click();
+  await page.getByRole("button", { name: "More", exact: true }).click();
   await page.getByRole("menu").waitFor();
   await page.keyboard.press("Escape");
 

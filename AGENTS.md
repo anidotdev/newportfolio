@@ -11,7 +11,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 # Portfolio — current state
 
 Homepage for **Samiran De**: sticky header, hero/profile with a Kyoto Dusk banner, socials,
-a compact Spotify status row, About with bio and tech stack, and an expandable Projects list.
+a compact Spotify status row, About with bio and tech stack, and a Projects list that shows
+three entries before expanding.
 
 ## Stack
 
@@ -37,7 +38,8 @@ a compact Spotify status row, About with bio and tech stack, and an expandable P
 | `src/components/kyoto-dusk-banner.tsx` | Decorative Kyoto Dusk canvas, centre-cropped in the banner |
 | `src/components/spotify-status.tsx` | Compact polling row, fallback, track link |
 | `src/components/about.tsx` | About rows, bio, tech stack |
-| `src/components/projects.tsx` | Projects heading, accordion rows, links, optional content |
+| `src/components/projects.tsx` | Projects heading, accordion rows, links, optional content, show-more control |
+| `src/lib/projects.mjs` | `INITIAL_VISIBLE_PROJECTS` and `groupProjects()` visibility split |
 | `src/components/project-icons.tsx` | `ProjectIconKey` to Lucide glyph map |
 | `src/components/section.tsx` | Full-bleed `SectionRow` and hatch `SectionSeparator` |
 | `src/components/tech-icons.tsx`, `icons/aws.tsx` | Brand glyph map and AWS glyph |
@@ -50,11 +52,12 @@ a compact Spotify status row, About with bio and tech stack, and an expandable P
 - `--container-max: 768px`; header inner, `.hero-grid` container track, About/Projects shells align.
 - `.hero-grid` switches at `min-width: 768px` to `[full-start] 1fr [container-start] var(--container-max) [container-end] 1fr [full-end]`; below it, both named lines share one fluid column.
 - Full-bleed elements use `col-[full]` through `SectionRow`; central content uses the shared container. Never use `100vw`.
-- The social row is 78px with five 40px icon links. The Spotify row sits inside the 768px shell below it (`-mt-2 pb-4`), left aligned: 16px green glyph, 12px mono muted status, 12px hairline dash, 14px track/artist text; long text truncates.
+- The social row is 78px with 40px icon links. The Spotify row sits inside the 768px shell below it (`-mt-2 pb-4`), left aligned: 16px green glyph, 12px mono muted status, 12px hairline dash, 14px track/artist text; long text truncates.
 - Banner frame is `h-40 md:h-[260px]`; the 2:1 Kyoto Dusk canvas fills its width, centre-cropped vertically behind the avatar. Its wrapper is `aria-hidden` and `pointer-events-none`; `ascii.rest` pauses off screen/hidden, scales for `devicePixelRatio`, and holds one frame under reduced motion.
 - About rows are full-bleed with `px-5`; the shell overlay draws unbroken hairlines. About has three rows: heading, bio, tech; the second hatch separator closes it.
-- Projects starts with its own full-bleed heading row (bottom hairline) and one `SectionRow` per project. Row hairlines span the viewport; icons, text, and controls stay in the shared container.
+- Projects starts with its own full-bleed heading row (bottom hairline) and one `SectionRow` per project. The first three configured projects show initially; when more exist, a centered `Show more`/`Show less` button follows the list and reveals the rest. Row hairlines span the viewport; icons, text, and controls stay in the shared container.
 - Project rows use a 32px icon tile, 12px gap, 18px semibold name, 15px mono date, and 32px shared `Button` icon controls. Expanded details align under the info column (`pl-16`) and never create a card.
+- Extra projects stay mounted in a grid-height/opacity wrapper (`#projects-more`) that is `inert`/`aria-hidden` when collapsed. The toggle uses the shared secondary `Button`: 38px high, 9px radius, `border-hairline`, 16px semibold text, 16px chevron, 10px gap, 20px above and 24px below; it exposes `aria-expanded`/`aria-controls` and does not change which project is open.
 - Hatch separators are 32px full-bleed with border-y; the heading row is 48/56px and tech is borderless.
 - Bio 15/26px mobile, 16/30px desktop, max 75ch; 5px muted bullets; underlined links. Project copy 15/26px mobile, 16/28.8px desktop.
 - Tech glyphs 40/44px; mono uppercase label; hover scale 1.08; 11px pointer label. Add via `TechIconKey`/`TECH_ICONS`.
@@ -64,8 +67,8 @@ a compact Spotify status row, About with bio and tech stack, and an expandable P
 ## Content, projects, Spotify
 
 - All copy, tech names, socials, project data, and placeholders live in `src/config/site.ts`. Do not reintroduce the old profile information grid.
-- `Project` fields: `id`, `name`, `icon` (`ProjectIconKey`), `period: { start, end? }`, optional `url`, `description`, `intro` (text/link segments), `features`, and `tags`. Add entries to `siteConfig.projects.projects`; the heading count follows the array.
-- Current project entries are clearly marked placeholders (`MM.YYYY` dates, `example.com` URL) and need real names, dates, copy, links, features, and tags.
+- `Project` fields: `id`, `name`, `icon` (`ProjectIconKey`), `period: { start, end? }`, optional `url`, `description`, `intro` (text/link segments), `features`, and `tags`. Add entries to `siteConfig.projects.projects`; the heading count follows the full array, while `src/lib/projects.mjs` splits the first three visible from the rest.
+- Current project entries are clearly marked placeholders (`MM.YYYY` dates, `example.com` URL) and need real names, dates, copy, links, features, and tags. The Show more control is omitted at three or fewer projects; labels live in `projects.labels`.
 - The first project starts open; only one opens at a time. Clicking an open title/disclosure closes it. External links sit above the row overlay and never toggle. Details render only for non-empty optional fields.
 - Reuse the shared shadcn `Button` (`variant="ghost"`, `size="icon"`) with Lucide `ChevronDown`/`ExternalLink`; label both controls, expose `aria-expanded`/`aria-controls`, and keep focus rings. The panel is a labelled `region` using grid-height/opacity transitions and `inert` when closed.
 - Bio is generic placeholder copy with one `https://example.com` link; replace it.
@@ -82,8 +85,9 @@ add real routes only when nav destinations should work.
 
 ## Verification
 
-Last verified 2026-10-22: `pnpm typecheck`, `pnpm lint`, `pnpm build`, and all four `check:*` scripts pass.
-`check:projects` covers 1440/1024/768/390, count/heading, row alignment and full-bleed hairlines,
-single-open accordion, external-link isolation, optional-field omission, keyboard/ARIA/focus,
+Last verified 2026-10-22: `pnpm typecheck`, `pnpm lint`, `pnpm build`, `check:header`, `check:about`,
+and `check:projects` pass. `check:hero` still expects five social links; config has three.
+`check:projects` covers 1440/1024/768/390, count/heading, full-bleed rows, the three-project limit,
+Show more/less expansion and collapse, chevron reversal, the <=3 helper branch, keyboard/ARIA/focus,
 light/dark axe, reduced motion, and overflow. `check:hero` covers the banner, palette, Spotify states,
 overflow/axe/stubs; `check:about` covers three rows, no card/caption/art, tech order, and hairlines.

@@ -89,6 +89,8 @@ export type ProjectsConfig = {
     openProject: string;
     showDetails: string;
     hideDetails: string;
+    showMore: string;
+    showLess: string;
     period: string;
     features: string;
     tags: string;
@@ -217,6 +219,8 @@ export const siteConfig: SiteConfig = {
       openProject: "Open project",
       showDetails: "Show project details",
       hideDetails: "Hide project details",
+      showMore: "Show more",
+      showLess: "Show less",
       period: "Period",
       features: "Key features",
       tags: "Technologies",
@@ -273,6 +277,29 @@ export const siteConfig: SiteConfig = {
           "The external-link control is hidden when no URL is configured.",
         ],
         tags: ["Tag one", "Replace me"],
+      },
+      {
+        id: "placeholder-four",
+        name: "Placeholder project four",
+        icon: "box",
+        period: { start: "MM.YYYY" },
+        description:
+          "This project starts hidden behind Show more. Replace the placeholder with real work and keep the list ordered by recency.",
+        features: [
+          "Progressive disclosure keeps the initial list compact.",
+          "The hidden rows stay inert until they are revealed.",
+        ],
+        tags: ["Tag one", "Replace me"],
+      },
+      {
+        id: "placeholder-five",
+        name: "Placeholder project five",
+        icon: "layers",
+        period: { start: "MM.YYYY", end: "MM.YYYY" },
+        url: "https://example.com",
+        description:
+          "This project also starts hidden. Add or remove entries in siteConfig.projects.projects; the control adapts to the list length.",
+        tags: ["Tag one", "Tag two"],
       },
     ],
   },

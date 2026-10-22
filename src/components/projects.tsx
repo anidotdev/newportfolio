@@ -12,6 +12,7 @@ import {
   type ProjectIntroSegment,
   type ProjectsConfig,
 } from "@/config/site";
+import { groupProjects } from "@/lib/projects.mjs";
 import { cn } from "@/lib/utils";
 
 const BODY_TEXT =
@@ -249,9 +250,12 @@ export function Projects() {
   const count = config.projects.length;
   const countLabel =
     count === 1 ? config.countLabel.one : config.countLabel.other;
+  const { visible: visibleProjects, remaining: remainingProjects, hasMore } =
+    groupProjects(config.projects);
   const [openId, setOpenId] = useState<string | null>(
     config.projects[0]?.id ?? null,
   );
+  const [showAll, setShowAll] = useState(false);
 
   function toggle(id: string) {
     setOpenId((current) => (current === id ? null : id));
@@ -288,7 +292,7 @@ export function Projects() {
         </h2>
       </SectionRow>
 
-      {config.projects.map((project) => (
+      {visibleProjects.map((project) => (
         <SectionRow key={project.id}>
           <ProjectItem
             project={project}
@@ -298,6 +302,60 @@ export function Projects() {
           />
         </SectionRow>
       ))}
+
+      {hasMore ? (
+        <>
+          <div
+            id="projects-more"
+            data-testid="projects-more"
+            aria-hidden={!showAll}
+            inert={!showAll}
+            className={cn(
+              "col-[full] grid transition-[grid-template-rows,opacity] duration-150 ease-[cubic-bezier(0.2,0,0,1)] motion-reduce:transition-none",
+              showAll
+                ? "grid-rows-[1fr] opacity-100"
+                : "grid-rows-[0fr] opacity-0",
+            )}
+          >
+            <div className="min-h-0 overflow-hidden">
+              {remainingProjects.map((project) => (
+                <SectionRow key={project.id}>
+                  <ProjectItem
+                    project={project}
+                    open={openId === project.id}
+                    onToggle={toggle}
+                    labels={config.labels}
+                  />
+                </SectionRow>
+              ))}
+            </div>
+          </div>
+
+          <SectionRow
+            bordered={false}
+            className="flex justify-center px-5 pb-6 pt-5"
+          >
+            <Button
+              type="button"
+              variant="secondary"
+              data-testid="projects-toggle"
+              aria-expanded={showAll}
+              aria-controls="projects-more"
+              onClick={() => setShowAll((current) => !current)}
+              className="h-[38px] gap-2.5 rounded-[9px] border-hairline px-4 text-base font-semibold"
+            >
+              <span>{showAll ? config.labels.showLess : config.labels.showMore}</span>
+              <ChevronDown
+                aria-hidden="true"
+                className={cn(
+                  "size-4 motion-safe:transition-transform motion-safe:duration-150",
+                  showAll && "rotate-180",
+                )}
+              />
+            </Button>
+          </SectionRow>
+        </>
+      ) : null}
     </section>
   );
 }
