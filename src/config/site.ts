@@ -131,7 +131,7 @@ type SiteConfig = {
 };
 
 export const siteConfig: SiteConfig = {
-  name: "Sam",
+  name: "Ani",
   description: "Software engineer and builder.",
   homeHref: "/",
   nav: [
@@ -146,28 +146,26 @@ export const siteConfig: SiteConfig = {
   ],
   github: {
     label: "GitHub",
-    href: "https://github.com/samworks",
+    href: "https://github.com/anidotdev",
     starCount: 2400,
   },
   hero: {
-    name: "Samiran De",
-    titles: ["Indie Hacker.", "Design Engineer.", "B.Tech CSE student."],
+    name: "Animesh",
+    titles: ["Indie Hacker.", "Data / ML Engineer.", "B.Tech CSE student."],
     // TODO: add a pronunciation clip, then set this to its public URL.
     nameAudio: undefined,
     // TODO: drop public/images/avatar.jpg here and use "/images/avatar.jpg".
     avatar: null,
-    avatarAlt: "Samiran De",
-    avatarInitials: "SD",
+    avatarAlt: "Animesh Gautam",
+    avatarInitials: "AG",
     verifiedLabel: "Verified",
     playNameLabel: "Play name pronunciation",
     socialsLabel: "Social links",
     socials: [
       // TODO: replace each placeholder URL with the real profile URL.
-      { label: "X", icon: "x", href: "#" },
-      { label: "GitHub", icon: "github", href: "#" },
-      { label: "LinkedIn", icon: "linkedin", href: "#" },
-      { label: "Discord", icon: "discord", href: "#" },
-      { label: "YouTube", icon: "youtube", href: "#" },
+      { label: "X", icon: "x", href: "https://x.com/anidotdev" },
+      { label: "GitHub", icon: "github", href: "https://github.com/anidotdev" },
+      { label: "LinkedIn", icon: "linkedin", href: "https://www.linkedin.com/in/anidotdev/" },
     ],
     socialNote: "follow me",
   },
