@@ -116,18 +116,6 @@ export function About() {
       </SectionRow>
 
       <SectionSeparator />
-
-      <SectionRow className="px-5 py-10" bordered={false}>
-        <div
-          role="region"
-          aria-label={siteConfig.hero.nextSectionsLabel}
-          className="flex min-h-[40vh] items-center justify-center rounded-[2px] border border-dashed border-hairline"
-        >
-          <p className="px-4 text-center font-mono text-xs text-muted-foreground">
-            {siteConfig.hero.nextSectionsNote}
-          </p>
-        </div>
-      </SectionRow>
     </section>
   );
 }

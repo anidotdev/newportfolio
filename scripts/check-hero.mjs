@@ -399,9 +399,14 @@ try {
     "About tech stack",
   );
   assert.equal(
-    await page.getByRole("region", { name: "Next sections" }).count(),
+    await page.getByRole("heading", { name: /Projects/ }).count(),
     1,
-    "About spacer",
+    "Projects heading",
+  );
+  assert.equal(
+    await page.getByRole("region", { name: "Next sections" }).count(),
+    0,
+    "old About spacer should be gone",
   );
   assert.equal(
     await about.getByTestId("spotify-card").count(),

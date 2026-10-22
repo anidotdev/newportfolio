@@ -149,17 +149,22 @@ try {
     "section title size",
   );
 
-  const bioLink = page.getByRole("link", { name: "sample link" });
+  const bioLink = bio.getByRole("link", { name: "sample link" });
   assert.equal(await bioLink.getAttribute("href"), "https://example.com");
   assert.equal(await bioLink.getAttribute("target"), "_blank");
   assert.equal(await bioLink.getAttribute("rel"), "noopener noreferrer");
 
   const nextSections = page.getByRole("region", { name: "Next sections" });
-  assert.equal(await nextSections.count(), 1, "next sections region");
+  assert.equal(await nextSections.count(), 0, "next sections region should be removed");
   assert.equal(
-    await nextSections.getByText("next sections go here", { exact: true }).count(),
+    await page.getByText("next sections go here", { exact: true }).count(),
+    0,
+    "next sections spacer copy should be removed",
+  );
+  assert.equal(
+    await page.getByRole("heading", { name: /Projects/ }).count(),
     1,
-    "next sections spacer copy",
+    "Projects heading should follow About",
   );
 
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -190,9 +195,9 @@ try {
     assert.deepEqual(borders, ["1px", "1px"], "separator hairlines");
   }
 
-  const rows = page.getByTestId("section-row");
-  assert.equal(await rows.count(), 4, "four About rows");
-  for (let index = 0; index < 4; index += 1) {
+  const rows = about.getByTestId("section-row");
+  assert.equal(await rows.count(), 3, "three About rows");
+  for (let index = 0; index < 3; index += 1) {
     const row = rows.nth(index);
     const rowBox = await box(row);
     assert.equal(Math.round(rowBox.width), 1440, "row width");
@@ -254,9 +259,9 @@ try {
       );
     }
 
-    const currentRows = page.getByTestId("section-row");
-    assert.equal(await currentRows.count(), 4, `row count at ${width}`);
-    for (let index = 0; index < 4; index += 1) {
+    const currentRows = about.getByTestId("section-row");
+    assert.equal(await currentRows.count(), 3, `row count at ${width}`);
+    for (let index = 0; index < 3; index += 1) {
       const rowBox = await box(currentRows.nth(index));
       assert.equal(Math.round(rowBox.width), width, `row viewport width at ${width}`);
     }

@@ -11,6 +11,7 @@
     "check:header": "node scripts/check-header.mjs",
     "check:hero": "node scripts/check-hero.mjs",
     "check:about": "node scripts/check-about.mjs",
+    "check:projects": "node scripts/check-projects.mjs",
     "spotify:token": "node scripts/spotify-token.mjs"
   },
   "dependencies": {

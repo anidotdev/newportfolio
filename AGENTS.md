@@ -10,9 +10,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Portfolio — current state
 
-Homepage for **Samiran De**: sticky header, hero/profile with a Kyoto Dusk banner,
-socials, a compact Spotify status row, and About with bio, tech stack, and a temporary
-next-sections spacer.
+Homepage for **Samiran De**: sticky header, hero/profile with a Kyoto Dusk banner, socials,
+a compact Spotify status row, About with bio and tech stack, and an expandable Projects list.
 
 ## Stack
 
@@ -24,82 +23,67 @@ next-sections spacer.
 ## Commands
 
 `pnpm dev`, `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm start`.
-`pnpm check:header`, `pnpm check:hero`, and `pnpm check:about` need a server on
-`http://localhost:3000`. `pnpm spotify:token` prints a refresh token; see
-`docs/spotify-setup.md`.
+`pnpm check:header`, `check:hero`, `check:about`, and `check:projects` need a server on
+`http://localhost:3000`. `pnpm spotify:token` prints a refresh token; see `docs/spotify-setup.md`.
 
 ## File map
 
 | Path | Responsibility |
 | --- | --- |
-| `src/app/{layout,page}.tsx` | Fonts/provider; hero + About; blur sentinel |
+| `src/app/{layout,page}.tsx` | Fonts/provider; hero + About + Projects; blur sentinel |
 | `src/app/globals.css` | Tokens, `.hero-grid`, `.section-title`, reduced motion |
 | `src/components/{site-header,mobile-menu}.tsx` | Sticky header, mobile Sheet |
 | `src/components/hero.tsx` | Banner frame, avatar, identity/title, social row, Spotify placement |
 | `src/components/kyoto-dusk-banner.tsx` | Decorative Kyoto Dusk canvas, centre-cropped in the banner |
 | `src/components/spotify-status.tsx` | Compact polling row, fallback, track link |
-| `src/components/about.tsx` | About rows, bio, tech stack, temporary spacer |
+| `src/components/about.tsx` | About rows, bio, tech stack |
+| `src/components/projects.tsx` | Projects heading, accordion rows, links, optional content |
+| `src/components/project-icons.tsx` | `ProjectIconKey` to Lucide glyph map |
 | `src/components/section.tsx` | Full-bleed `SectionRow` and hatch `SectionSeparator` |
 | `src/components/tech-icons.tsx`, `icons/aws.tsx` | Brand glyph map and AWS glyph |
-| `src/config/site.ts` | Brand/nav, hero/socials, About, Spotify fallback/labels |
+| `src/config/site.ts` | Brand/nav, hero/socials, About, Projects, Spotify fallback/labels |
 | `src/lib/spotify.ts`, `app/api/spotify/route.ts` | Server token/track data and API |
 | `scripts/check-*.mjs`, `scripts/spotify-token.mjs`, `docs/spotify-setup.md`, `.env.example` | Checks, token helper, setup, env template |
 
 ## Layout and tokens
 
-- `--container-max: 768px`; header inner, `.hero-grid` container track, and About shell align.
-- `.hero-grid` switches at `min-width: 768px` to `[full-start] 1fr [container-start]
-  var(--container-max) [container-end] 1fr [full-end]`. Below it, both named lines share
-  one fluid column. Full-bleed elements use `col-[full]`; central content uses `col-[container]`.
-- The social row is 78px with five 40px icon links. The Spotify row sits inside the same
-  768px shell directly below it (`-mt-2 pb-4`), aligned left. It uses a 16px Spotify green
-  glyph, 12px mono muted status, a 12px hairline dash, and 14px track/artist text with 8px
-  gaps; no card/background/border/caption, long text truncates, and the link opens Spotify.
-- Banner frame is `h-40 md:h-[260px]`; the 2:1 Kyoto Dusk canvas fills its width and is
-  centre-cropped vertically, behind the avatar. It is decorative and ignores pointers.
-- The canvas wrapper is `aria-hidden` and `pointer-events-none`; `ascii.rest` pauses off
-  screen/hidden, scales for `devicePixelRatio`, and holds one frame under reduced motion.
-- About rows are full-bleed; inner content caps at 768px with `px-5`; the shell overlay
-  draws unbroken hairlines. About has four rows: heading, bio, tech, spacer.
-- When changing `--container-max`, keep hairlines, hatch separators, and full-bleed rows
-  edge-to-edge; narrow only the central track. Never use `100vw` for full-bleed elements.
+- `--container-max: 768px`; header inner, `.hero-grid` container track, About/Projects shells align.
+- `.hero-grid` switches at `min-width: 768px` to `[full-start] 1fr [container-start] var(--container-max) [container-end] 1fr [full-end]`; below it, both named lines share one fluid column.
+- Full-bleed elements use `col-[full]` through `SectionRow`; central content uses the shared container. Never use `100vw`.
+- The social row is 78px with five 40px icon links. The Spotify row sits inside the 768px shell below it (`-mt-2 pb-4`), left aligned: 16px green glyph, 12px mono muted status, 12px hairline dash, 14px track/artist text; long text truncates.
+- Banner frame is `h-40 md:h-[260px]`; the 2:1 Kyoto Dusk canvas fills its width, centre-cropped vertically behind the avatar. Its wrapper is `aria-hidden` and `pointer-events-none`; `ascii.rest` pauses off screen/hidden, scales for `devicePixelRatio`, and holds one frame under reduced motion.
+- About rows are full-bleed with `px-5`; the shell overlay draws unbroken hairlines. About has three rows: heading, bio, tech; the second hatch separator closes it.
+- Projects starts with its own full-bleed heading row (bottom hairline) and one `SectionRow` per project. Row hairlines span the viewport; icons, text, and controls stay in the shared container.
+- Project rows use a 32px icon tile, 12px gap, 18px semibold name, 15px mono date, and 32px shared `Button` icon controls. Expanded details align under the info column (`pl-16`) and never create a card.
 - Hatch separators are 32px full-bleed with border-y; the heading row is 48/56px and tech is borderless.
-- Bio 15/26px mobile, 16/30px desktop, max 75ch; 5px muted bullets; underlined links.
+- Bio 15/26px mobile, 16/30px desktop, max 75ch; 5px muted bullets; underlined links. Project copy 15/26px mobile, 16/28.8px desktop.
 - Tech glyphs 40/44px; mono uppercase label; hover scale 1.08; 11px pointer label. Add via `TechIconKey`/`TECH_ICONS`.
-- Existing tokens: `--background`, `--foreground`, `--muted-foreground`, `--hairline`,
-  `--chip`, `--ring`, `--popover`, `--container-max`. New: `--surface-subtle` /
-  `--surface-strong` / `--surface-hover`, `--hatch`, `--blur-veil`, `--font-hand`,
-  brand tokens, and `--spotify-playing`. Use semantic classes, not color literals.
+- Existing tokens: `--background`, `--foreground`, `--muted-foreground`, `--hairline`, `--chip`, `--ring`, `--popover`, `--container-max`; plus `--surface-subtle`/`--surface-strong`/`--surface-hover`, `--hatch`, `--blur-veil`, `--font-hand`, brand tokens, and `--spotify-playing`. Use semantic classes.
 - Theme is class-based, dark default, system disabled; AA contrast is verified.
 
-## Content and Spotify
+## Content, projects, Spotify
 
-- All copy, tech names, socials, and placeholders live in `src/config/site.ts`. The old
-  profile information grid and its time/email/phone config are removed; do not reintroduce.
+- All copy, tech names, socials, project data, and placeholders live in `src/config/site.ts`. Do not reintroduce the old profile information grid.
+- `Project` fields: `id`, `name`, `icon` (`ProjectIconKey`), `period: { start, end? }`, optional `url`, `description`, `intro` (text/link segments), `features`, and `tags`. Add entries to `siteConfig.projects.projects`; the heading count follows the array.
+- Current project entries are clearly marked placeholders (`MM.YYYY` dates, `example.com` URL) and need real names, dates, copy, links, features, and tags.
+- The first project starts open; only one opens at a time. Clicking an open title/disclosure closes it. External links sit above the row overlay and never toggle. Details render only for non-empty optional fields.
+- Reuse the shared shadcn `Button` (`variant="ghost"`, `size="icon"`) with Lucide `ChevronDown`/`ExternalLink`; label both controls, expose `aria-expanded`/`aria-controls`, and keep focus rings. The panel is a labelled `region` using grid-height/opacity transitions and `inert` when closed.
 - Bio is generic placeholder copy with one `https://example.com` link; replace it.
-- Banner art is `kyoto-dusk` from `ascii.rest/pieces/kyoto-dusk` (MIT, © bas3line),
-  mounted by `src/components/kyoto-dusk-banner.tsx` at its native 200×100, 15 fps. Do not
-  approximate, recolour, or screenshot it. `hero.avatar` is the only image setting; null
-  renders `SD`; set `hero.nameAudio` to show the pronunciation control.
-- Spotify credentials are server-only in `.env.local`: `SPOTIFY_CLIENT_ID`,
-  `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REFRESH_TOKEN`. Missing/failed data renders the
-  fallback track from `siteConfig.spotify.fallback` without claiming live playback.
-- The API always returns 200 JSON and caches 30s. `cacheComponents` forbids route
-  `dynamic`; the API uses `await connection()` and builds dynamic.
-- The compact row polls every 60s, pauses when hidden, aborts stale requests, and labels
-  the icon `Spotify`; album art is no longer rendered, so `i.scdn.co` is not configured.
-- All Playwright page tests stub `**/api/spotify`; never call the real Spotify API.
-- Do not commit credentials; `.env*` is ignored except `.env.example`.
+- Banner art is `kyoto-dusk` from `ascii.rest/pieces/kyoto-dusk` (MIT, © bas3line), mounted at its native 200×100, 15 fps. Do not approximate, recolour, or screenshot it. `hero.avatar` is the only image setting; null renders `SD`; set `hero.nameAudio` to show the pronunciation control.
+- Spotify credentials are server-only in `.env.local`: `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REFRESH_TOKEN`. Missing/failed data renders `siteConfig.spotify.fallback` without claiming live playback.
+- The API always returns 200 JSON and caches 30s. `cacheComponents` forbids route `dynamic`; it uses `await connection()` and builds dynamic. The row polls every 60s, pauses hidden, aborts stale requests, and labels the icon `Spotify`; album art is not rendered, so `i.scdn.co` is not configured.
+- All Playwright page tests stub `**/api/spotify`; never call the real Spotify API. Do not commit credentials; `.env*` is ignored except `.env.example`.
 
-## Next: Projects section
+## Next: Experience section
 
-Build Projects below About in the same shell, preserving `#main-content`, `.hero-grid`,
-the hero/About contracts, and the temp spacer. Do not redesign header/hero; add real
-routes only when nav destinations should work.
+Build Experience below Projects in the same shell, preserving `#main-content`, `.hero-grid`, the
+hero/About/Projects contracts, and the full-bleed hairline conventions. Do not redesign header/hero;
+add real routes only when nav destinations should work.
 
 ## Verification
 
-Last verified 2026-10-22: `pnpm typecheck`, `pnpm lint`, `pnpm build`, and all three
-`check:*` scripts pass. `check:hero` covers 1440/1024/768/390, Kyoto Dusk canvas,
-palette, animation/reduced motion, placeholder removal, Spotify states, overflow/axe/stubs.
-`check:about` covers four rows, no old card/caption/art, tech order, spacer, and hairlines.
+Last verified 2026-10-22: `pnpm typecheck`, `pnpm lint`, `pnpm build`, and all four `check:*` scripts pass.
+`check:projects` covers 1440/1024/768/390, count/heading, row alignment and full-bleed hairlines,
+single-open accordion, external-link isolation, optional-field omission, keyboard/ARIA/focus,
+light/dark axe, reduced motion, and overflow. `check:hero` covers the banner, palette, Spotify states,
+overflow/axe/stubs; `check:about` covers three rows, no card/caption/art, tech order, and hairlines.
