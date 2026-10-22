@@ -177,24 +177,24 @@ export const siteConfig: SiteConfig = {
     bio: [
       [
         {
-          text: "Use this space for a short introduction: what you work on, how you approach problems, and the details you want a visitor to know first.",
+          text: "I'm a CSE student interested in Machine Learning, Data Engineering, and how things work under the hood. I like building things, breaking them, and figuring out why they work the way they do.",
         },
       ],
       [
         {
-          text: "This bullet can explain how you collaborate and what you are exploring next. Replace the ",
+          text: "Currently exploring LLM inference, performance, and low-level systems concepts, while building projects and writing about what I learn. ",
         },
         {
-          text: "sample link",
-          href: "https://example.com",
+          text: "Github",
+          href: "https://github.com/anidotdev",
         },
         {
-          text: " with a real project, profile, or article.",
+          text: " is where most of my projects live.",
         },
       ],
       [
         {
-          text: "A final short paragraph can cover interests outside work or a note about this site. Keep the copy specific, useful, and easy to replace.",
+          text: "Outside of tech, I enjoy writing, watching football, and travelling whenever I get the chance.",
         },
       ],
     ],
