@@ -157,7 +157,7 @@ export const siteConfig: SiteConfig = {
     // TODO: add a pronunciation clip, then set this to its public URL.
     nameAudio: undefined,
     // TODO: drop public/images/avatar.jpg here and use "/images/avatar.jpg".
-    avatar: null,
+    avatar: "/images/avatar.jpg",
     avatarAlt: "Animesh Gautam",
     avatarInitials: "AG",
     verifiedLabel: "Verified",
