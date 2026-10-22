@@ -1,5 +1,4 @@
 import { SectionRow, SectionSeparator } from "@/components/section";
-import { SpotifyCard } from "@/components/spotify-card";
 import { TechGlyph } from "@/components/tech-icons";
 import { siteConfig, type BioSegment } from "@/config/site";
 
@@ -110,10 +109,6 @@ export function About() {
             </li>
           ))}
         </ul>
-      </SectionRow>
-
-      <SectionRow className="px-5 pb-5 pt-7">
-        <SpotifyCard />
       </SectionRow>
 
       <SectionRow className="px-5 py-5" bordered={false}>

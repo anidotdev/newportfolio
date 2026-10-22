@@ -5,24 +5,10 @@ export type NavItem = {
 
 export type SocialIcon = "x" | "github" | "linkedin" | "discord" | "youtube";
 
-export type InfoIcon =
-  | "code"
-  | "lightbulb"
-  | "map-pin"
-  | "mail"
-  | "clock"
-  | "phone";
-
 export type SocialLink = {
   label: string;
   icon: SocialIcon;
   href: string;
-};
-
-export type InfoItem = {
-  icon: InfoIcon;
-  text: string;
-  href?: string;
 };
 
 export type HeroConfig = {
@@ -40,20 +26,6 @@ export type HeroConfig = {
   socialsLabel: string;
   socials: SocialLink[];
   socialNote: string;
-  infoLabel: string;
-  info: {
-    work: InfoItem;
-    tagline: InfoItem;
-    location: InfoItem;
-    email: InfoItem;
-    timeZone: string;
-    timeLabels: {
-      same: string;
-      ahead: string;
-      behind: string;
-    };
-    phone: InfoItem;
-  };
   nextSectionsLabel: string;
   nextSectionsNote: string;
 };
@@ -94,14 +66,10 @@ export type SpotifyTrack = {
 export type SpotifyConfig = {
   fallback: SpotifyTrack;
   labels: {
+    iconLabel: string;
     lastPlayed: string;
     nowPlaying: string;
-    synced: string;
-    notSynced: string;
     loading: string;
-    by: string;
-    lastPlayedAria: string;
-    nowPlayingAria: string;
   };
 };
 
@@ -165,30 +133,6 @@ export const siteConfig: SiteConfig = {
       { label: "YouTube", icon: "youtube", href: "#" },
     ],
     socialNote: "follow me",
-    infoLabel: "Profile details",
-    info: {
-      work: { icon: "code", text: "Design Engineer" },
-      tagline: { icon: "lightbulb", text: "Indie Hacker" },
-      location: { icon: "map-pin", text: "West Bengal, India" },
-      email: {
-        icon: "mail",
-        // TODO: replace with the real email address.
-        text: "hello@example.com",
-        href: "mailto:hello@example.com",
-      },
-      timeZone: "Asia/Kolkata",
-      timeLabels: {
-        same: "same time",
-        ahead: "ahead",
-        behind: "behind",
-      },
-      phone: {
-        icon: "phone",
-        // TODO: replace with the real phone number.
-        text: "+91 00000 00000",
-        href: "tel:+910000000000",
-      },
-    },
     nextSectionsLabel: "Next sections",
     nextSectionsNote: "next sections go here",
   },
@@ -238,14 +182,10 @@ export const siteConfig: SiteConfig = {
       albumArt: null,
     },
     labels: {
+      iconLabel: "Spotify",
       lastPlayed: "Last played",
-      nowPlaying: "Now playing",
-      synced: "SYNCED",
-      notSynced: "NOT SYNCED",
+      nowPlaying: "Now Playing",
       loading: "Loading Spotify",
-      by: "by",
-      lastPlayedAria: "Last played on Spotify",
-      nowPlayingAria: "Now playing on Spotify",
     },
   },
 };

@@ -2,31 +2,12 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
-import {
-  BadgeCheck,
-  Clock,
-  Code,
-  Lightbulb,
-  Mail,
-  MapPin,
-  Phone,
-  Volume2,
-  type LucideIcon,
-} from "lucide-react";
+import { BadgeCheck, Volume2 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { BrandIcon } from "@/components/brand-icons";
-import { siteConfig, type InfoIcon, type InfoItem } from "@/config/site";
-import { cn } from "@/lib/utils";
-
-const INFO_ICONS: Record<InfoIcon, LucideIcon> = {
-  code: Code,
-  lightbulb: Lightbulb,
-  "map-pin": MapPin,
-  mail: Mail,
-  clock: Clock,
-  phone: Phone,
-};
+import { SpotifyStatus } from "@/components/spotify-status";
+import { siteConfig } from "@/config/site";
 
 const SOCIAL_NOTE_QUERY = "(min-width: 1320px)";
 
@@ -42,127 +23,6 @@ function useShowSocialNote() {
     subscribeToSocialNote,
     () => window.matchMedia(SOCIAL_NOTE_QUERY).matches,
     () => false,
-  );
-}
-
-let clockSnapshot = 0;
-const clockListeners = new Set<() => void>();
-let clockTimer: number | undefined;
-
-function subscribeToClock(listener: () => void) {
-  clockListeners.add(listener);
-
-  if (clockTimer === undefined) {
-    clockSnapshot = Date.now();
-    clockTimer = window.setInterval(() => {
-      clockSnapshot = Date.now();
-      clockListeners.forEach((notify) => notify());
-    }, 30_000);
-  }
-
-  listener();
-
-  return () => {
-    clockListeners.delete(listener);
-    if (clockListeners.size === 0 && clockTimer !== undefined) {
-      window.clearInterval(clockTimer);
-      clockTimer = undefined;
-    }
-  };
-}
-
-function useClock() {
-  return useSyncExternalStore(
-    subscribeToClock,
-    () => clockSnapshot,
-    () => 0,
-  );
-}
-
-function formatTime(timeZone: string, date: Date) {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true,
-  }).format(date);
-}
-
-function getOffsetMinutes(timeZone: string, date: Date) {
-  const zoneName = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    timeZoneName: "longOffset",
-  })
-    .formatToParts(date)
-    .find((part) => part.type === "timeZoneName")?.value;
-
-  if (!zoneName || zoneName === "GMT") return 0;
-
-  const match = /GMT([+-])(\d{1,2})(?::(\d{2}))?/.exec(zoneName);
-  if (!match) return 0;
-
-  const sign = match[1] === "-" ? -1 : 1;
-  return sign * (Number(match[2]) * 60 + Number(match[3] ?? 0));
-}
-
-function formatRelativeTime(
-  timeZone: string,
-  date: Date,
-  labels: { same: string; ahead: string; behind: string },
-) {
-  const visitorTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const difference =
-    getOffsetMinutes(timeZone, date) - getOffsetMinutes(visitorTimeZone, date);
-
-  if (difference === 0) return labels.same;
-
-  const distance = Math.abs(difference);
-  const hours = Math.floor(distance / 60);
-  const minutes = distance % 60;
-  const amount = [hours ? `${hours}h` : "", minutes ? `${minutes}m` : ""]
-    .filter(Boolean)
-    .join(" ");
-
-  return `${amount} ${difference > 0 ? labels.ahead : labels.behind}`;
-}
-
-function InfoRow({
-  icon,
-  className,
-  children,
-}: {
-  icon: InfoIcon;
-  className?: string;
-  children: React.ReactNode;
-}) {
-  const Icon = INFO_ICONS[icon];
-
-  return (
-    <div
-      className={cn(
-        "flex h-[42px] min-w-0 items-center gap-2.5",
-        className,
-      )}
-    >
-      <span className="flex size-8 shrink-0 items-center justify-center rounded-[8px] border border-hairline bg-surface-strong text-muted-foreground">
-        <Icon aria-hidden="true" className="size-4" strokeWidth={1.75} />
-      </span>
-      <div className="min-w-0 font-mono text-base text-foreground">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function InfoLink({ item }: { item: InfoItem }) {
-  return (
-    <a
-      href={item.href}
-      title={item.text}
-      className="block truncate underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-    >
-      {item.text}
-    </a>
   );
 }
 
@@ -376,98 +236,32 @@ function Socials() {
   const showNote = useShowSocialNote();
 
   return (
-    <div className="col-[full] border-b border-hairline">
-      <div className="relative mx-auto flex h-[78px] w-full max-w-[var(--container-max)] items-center px-5">
-        {showNote ? <SocialNote text={hero.socialNote} /> : null}
-        <nav aria-label={hero.socialsLabel}>
-          <ul className="flex items-center gap-2.5">
-            {hero.socials.map((social) => (
-              <li key={social.label}>
-                <a
-                  data-testid="social-link"
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={social.label}
-                  className="flex size-10 items-center justify-center rounded-[8px] border border-hairline bg-surface-subtle text-muted-foreground transition-[color,background-color,scale] duration-150 ease-out hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-safe:active:scale-[0.96]"
-                >
-                  <BrandIcon name={social.icon} className="size-5" />
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-    </div>
-  );
-}
+    <div className="col-[full]">
+      <div className="relative mx-auto w-full max-w-[var(--container-max)] px-5">
+        <div className="relative flex h-[78px] items-center">
+          {showNote ? <SocialNote text={hero.socialNote} /> : null}
+          <nav aria-label={hero.socialsLabel}>
+            <ul className="flex items-center gap-2.5">
+              {hero.socials.map((social) => (
+                <li key={social.label}>
+                  <a
+                    data-testid="social-link"
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={social.label}
+                    className="flex size-10 items-center justify-center rounded-[8px] border border-hairline bg-surface-subtle text-muted-foreground transition-[color,background-color,scale] duration-150 ease-out hover:bg-surface-hover hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-safe:active:scale-[0.96]"
+                  >
+                    <BrandIcon name={social.icon} className="size-5" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
 
-function Details() {
-  const { hero } = siteConfig;
-  const { info } = hero;
-  const now = useClock();
-  const date = now ? new Date(now) : null;
-  const time = date ? formatTime(info.timeZone, date) : null;
-  const relative = date
-    ? formatRelativeTime(info.timeZone, date, info.timeLabels)
-    : null;
-
-  return (
-    <div
-      role="group"
-      aria-label={hero.infoLabel}
-      className="col-[container] px-5 py-5"
-    >
-      <div className="relative">
-        <div
-          aria-hidden="true"
-          className="absolute inset-y-0 left-1/2 hidden border-l border-dashed border-hairline sm:block"
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 sm:grid-rows-4 sm:gap-x-10">
-          <InfoRow
-            icon={info.work.icon}
-            className="sm:col-start-1 sm:row-start-1"
-          >
-            <span className="block truncate">{info.work.text}</span>
-          </InfoRow>
-          <InfoRow
-            icon={info.tagline.icon}
-            className="sm:col-start-1 sm:row-start-2"
-          >
-            <span className="block truncate">{info.tagline.text}</span>
-          </InfoRow>
-          <InfoRow
-            icon={info.location.icon}
-            className="sm:col-start-1 sm:row-start-3"
-          >
-            <span className="block truncate">{info.location.text}</span>
-          </InfoRow>
-          <InfoRow
-            icon="clock"
-            className="sm:col-start-2 sm:row-start-3"
-          >
-            <span className="flex min-w-0 items-center gap-1.5">
-              <span className="inline-block w-[8ch] shrink-0 tabular-nums">
-                {time ?? "--:-- --"}
-              </span>
-              <span className="truncate text-muted-foreground">
-                <span aria-hidden="true">{"// "}</span>
-                {relative ?? "…"}
-              </span>
-            </span>
-          </InfoRow>
-          <InfoRow
-            icon={info.email.icon}
-            className="sm:col-start-1 sm:row-start-4"
-          >
-            <InfoLink item={info.email} />
-          </InfoRow>
-          <InfoRow
-            icon={info.phone.icon}
-            className="sm:col-start-2 sm:row-start-4"
-          >
-            <InfoLink item={info.phone} />
-          </InfoRow>
+        <div className="-mt-2 pb-4">
+          <SpotifyStatus />
         </div>
       </div>
     </div>
@@ -499,7 +293,6 @@ export function Hero() {
       />
 
       <Socials />
-      <Details />
     </section>
   );
 }

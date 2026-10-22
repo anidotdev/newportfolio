@@ -1,7 +1,8 @@
 # Spotify setup
 
-The About card reads the three server-only variables in `.env.example`. Missing
-credentials or a failed request render the placeholder track with `NOT SYNCED`.
+The compact Spotify status row in the hero reads the three server-only variables in
+`.env.example`. Missing credentials or a failed request render the placeholder track from
+`siteConfig.spotify.fallback`; live playback is never claimed.
 
 1. Create an app in the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
 2. Add `http://127.0.0.1:8888/callback` as a redirect URI. Copy the client ID and secret.

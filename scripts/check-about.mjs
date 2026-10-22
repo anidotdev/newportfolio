@@ -12,15 +12,6 @@ const EXPECTED_TECH = [
   "Google Cloud",
 ];
 
-const playing = {
-  ok: true,
-  isPlaying: true,
-  title: "Test track",
-  artists: ["Test artist"],
-  albumArt: null,
-  url: "https://open.spotify.com/track/now",
-};
-
 const lastPlayed = {
   ok: true,
   isPlaying: false,
@@ -28,15 +19,6 @@ const lastPlayed = {
   artists: ["Artist one", "Artist two"],
   albumArt: null,
   url: "https://open.spotify.com/track/last",
-};
-
-const failure = {
-  ok: false,
-  isPlaying: false,
-  title: "Track title",
-  artists: ["Artist name"],
-  albumArt: null,
-  url: "https://open.spotify.com",
 };
 
 const browser = await chromium.launch();
@@ -51,19 +33,12 @@ page.on("console", (message) => {
 });
 page.on("pageerror", (error) => consoleErrors.push(error.message));
 
-let mode = "playing";
-let delayMs = 0;
-
 await page.route("**/api/spotify", async (route) => {
-  if (delayMs) await new Promise((resolve) => setTimeout(resolve, delayMs));
-
-  const body = mode === "playing" ? playing : mode === "last" ? lastPlayed : failure;
-
   try {
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify(body),
+      body: JSON.stringify(lastPlayed),
     });
   } catch {
     // The page can navigate away while a request is still pending.
@@ -113,100 +88,51 @@ async function runAxe(theme) {
   );
 }
 
-async function waitForCard() {
-  await page.waitForFunction(() => {
-    const card = document.querySelector('[data-testid="spotify-card"]');
-    return (
-      card?.tagName === "A" &&
-      card.getAttribute("href")?.startsWith("https://open.spotify.com")
-    );
-  });
-
-  return page.getByTestId("spotify-card");
-}
-
-async function captionText() {
-  return page
-    .getByTestId("spotify-caption")
-    .evaluate((element) =>
-      (element.textContent ?? "").replace(/[\u00a0\u202f]/g, " ").trim(),
-    );
-}
-
-async function waitForSyncedCaption() {
-  await page.waitForFunction(() => {
-    const element = document.querySelector('[data-testid="spotify-caption"]');
-    const text = (element?.textContent ?? "")
-      .replace(/[\u00a0\u202f]/g, " ")
-      .trim();
-    return /^SYNCED \d{1,2}:\d{2} (AM|PM)$/i.test(text);
-  });
-}
-
-async function waitForNotSyncedCaption() {
-  await page.waitForFunction(() =>
-    (document.querySelector('[data-testid="spotify-caption"]')?.textContent ?? "")
-      .replace(/[\u00a0\u202f]/g, " ")
-      .trim()
-      .match(/^NOT SYNCED$/i),
-  );
-}
-
 try {
-  mode = "playing";
-  delayMs = 1500;
-  await page.goto(BASE_URL, { waitUntil: "domcontentloaded" });
-
-  const skeleton = page.getByTestId("spotify-card");
-  await skeleton.waitFor();
-  const skeletonBox = await box(skeleton);
-  assert.equal(Math.round(skeletonBox.height), 112, "loading card height");
-
-  delayMs = 0;
-  let card = await waitForCard();
-  await waitForSyncedCaption();
+  await page.goto(BASE_URL, { waitUntil: "networkidle" });
   await page.evaluate(() => document.fonts.ready);
 
-  const cardBox = await box(card);
-  assert.equal(Math.round(cardBox.height), 112, "loaded card height");
-  assert.equal(
-    Math.round(cardBox.height),
-    Math.round(skeletonBox.height),
-    "card height should not shift after loading",
-  );
-  assert.ok(cardBox.width <= 480, "card should be at most 480px wide");
-  assert.equal(cardBox.width, 480, "card should use its maximum width at 1440");
-  assert.equal(
-    Math.round(cardBox.x + cardBox.width / 2),
-    720,
-    "card should be centered",
-  );
-  assert.equal(
-    await card.getAttribute("target"),
-    "_blank",
-    "card should open in a new tab",
-  );
-  assert.equal(
-    await card.getAttribute("rel"),
-    "noopener noreferrer",
-    "card should use a safe rel",
-  );
-  assert.equal(
-    await card.getAttribute("aria-label"),
-    "Now playing on Spotify: Now playing Test track by Test artist",
-    "playing aria-label",
-  );
-  assert.equal(await page.getByTestId("spotify-status").innerText(), "Now playing");
-  assert.equal(
-    await page
-      .getByTestId("spotify-status-dot")
-      .evaluate((element) => getComputedStyle(element).backgroundColor),
-    "rgb(29, 185, 84)",
-    "playing dot should be Spotify green",
-  );
-  assert.match(await captionText(), /^SYNCED \d{1,2}:\d{2} (AM|PM)$/i);
+  const about = page.getByTestId("about-section");
+  const heading = page.getByRole("heading", { name: "About", level: 2 });
+  await heading.waitFor();
 
-  await page.getByRole("heading", { name: "About", level: 2 }).waitFor();
+  assert.equal(await page.getByTestId("spotify-card").count(), 0, "old card");
+  assert.equal(
+    await page.getByTestId("spotify-caption").count(),
+    0,
+    "old synced caption",
+  );
+  assert.equal(
+    await page.getByTestId("spotify-status-dot").count(),
+    0,
+    "old status dot",
+  );
+  assert.equal(
+    await about.getByTestId("spotify-card").count(),
+    0,
+    "old card inside About",
+  );
+  assert.equal(
+    await about.getByTestId("spotify-status-row").count(),
+    0,
+    "Spotify row should not be inside About",
+  );
+  assert.equal(
+    await about.locator("img").count(),
+    0,
+    "About should not render album art",
+  );
+  assert.equal(
+    await page.getByText("SYNCED", { exact: true }).count(),
+    0,
+    "old SYNCED caption should be absent",
+  );
+  assert.equal(
+    await page.getByText("NOT SYNCED", { exact: true }).count(),
+    0,
+    "old NOT SYNCED caption should be absent",
+  );
+
   const bio = page.getByTestId("about-bio");
   assert.equal(await bio.locator("li").count(), 3, "bio should have 3 bullets");
   assert.equal(
@@ -218,9 +144,7 @@ try {
     "bio line-height at 1440",
   );
   assert.equal(
-    await page
-      .getByRole("heading", { name: "About", level: 2 })
-      .evaluate((element) => getComputedStyle(element).fontSize),
+    await heading.evaluate((element) => getComputedStyle(element).fontSize),
     "30px",
     "section title size",
   );
@@ -230,10 +154,18 @@ try {
   assert.equal(await bioLink.getAttribute("target"), "_blank");
   assert.equal(await bioLink.getAttribute("rel"), "noopener noreferrer");
 
+  const nextSections = page.getByRole("region", { name: "Next sections" });
+  assert.equal(await nextSections.count(), 1, "next sections region");
+  assert.equal(
+    await nextSections.getByText("next sections go here", { exact: true }).count(),
+    1,
+    "next sections spacer copy",
+  );
+
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.waitForTimeout(200);
 
-  const sectionBox = await box(page.getByTestId("about-section"));
+  const sectionBox = await box(about);
   const shell = page.getByTestId("about-shell");
   const shellBox = await box(shell);
   assert.equal(Math.round(shellBox.width), 768, "shell width at 1440");
@@ -259,15 +191,15 @@ try {
   }
 
   const rows = page.getByTestId("section-row");
-  assert.equal(await rows.count(), 5, "five About rows");
-  for (let index = 0; index < 5; index += 1) {
+  assert.equal(await rows.count(), 4, "four About rows");
+  for (let index = 0; index < 4; index += 1) {
     const row = rows.nth(index);
     const rowBox = await box(row);
     assert.equal(Math.round(rowBox.width), 1440, "row width");
     const border = await row.evaluate(
       (element) => getComputedStyle(element).borderBottomWidth,
     );
-    assert.equal(border, index < 3 ? "1px" : "0px", `row border at ${index}`);
+    assert.equal(border, index < 2 ? "1px" : "0px", `row border at ${index}`);
   }
 
   const techList = page.getByRole("list", { name: "Tech stack" });
@@ -312,48 +244,6 @@ try {
       `shell width at ${width}`,
     );
 
-    const currentCard = await waitForCard();
-    const currentCardBox = await box(currentCard);
-    assert.equal(Math.round(currentCardBox.height), 112, `card height at ${width}`);
-    assert.ok(currentCardBox.width <= 480, `card width at ${width}`);
-    assert.equal(
-      Math.round(currentCardBox.x + currentCardBox.width / 2),
-      Math.round(width / 2),
-      `card center at ${width}`,
-    );
-
-    const titleSize = await currentCard
-      .locator("p")
-      .first()
-      .evaluate((element) => getComputedStyle(element).fontSize);
-    assert.equal(titleSize, width < 768 ? "18px" : "22px", `title size at ${width}`);
-
-    const statusMetrics = await page
-      .getByTestId("spotify-status")
-      .evaluate((element) => ({
-        clientWidth: element.clientWidth,
-        scrollWidth: element.scrollWidth,
-      }));
-    assert.ok(
-      statusMetrics.scrollWidth <= statusMetrics.clientWidth + 1,
-      `status should not truncate at ${width}`,
-    );
-
-    const textTruncation = await currentCard.locator("p").evaluateAll((elements) =>
-      elements.map((element) => {
-        const style = getComputedStyle(element);
-        return [style.overflow, style.textOverflow, style.whiteSpace];
-      }),
-    );
-    assert.deepEqual(
-      textTruncation,
-      [
-        ["hidden", "ellipsis", "nowrap"],
-        ["hidden", "ellipsis", "nowrap"],
-      ],
-      `title and artists should truncate cleanly at ${width}`,
-    );
-
     const currentSeparators = page.getByTestId("section-separator");
     for (let index = 0; index < 2; index += 1) {
       const separatorBox = await box(currentSeparators.nth(index));
@@ -365,7 +255,8 @@ try {
     }
 
     const currentRows = page.getByTestId("section-row");
-    for (let index = 0; index < 5; index += 1) {
+    assert.equal(await currentRows.count(), 4, `row count at ${width}`);
+    for (let index = 0; index < 4; index += 1) {
       const rowBox = await box(currentRows.nth(index));
       assert.equal(Math.round(rowBox.width), width, `row viewport width at ${width}`);
     }
@@ -374,60 +265,7 @@ try {
     assert.ok(glyphBox.width >= 40, `tech glyph width at ${width}`);
   }
 
-  mode = "last";
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.reload({ waitUntil: "domcontentloaded" });
-  card = await waitForCard();
-  await waitForSyncedCaption();
-  assert.equal(await page.getByTestId("spotify-status").innerText(), "Last played");
-  assert.equal(
-    await card.getAttribute("aria-label"),
-    "Last played on Spotify: Last played Another track by Artist one, Artist two",
-    "last played aria-label",
-  );
-  assert.notEqual(
-    await page
-      .getByTestId("spotify-status-dot")
-      .evaluate((element) => getComputedStyle(element).backgroundColor),
-    "rgb(29, 185, 84)",
-    "last played dot should not be green",
-  );
-
-  mode = "failure";
-  await page.reload({ waitUntil: "domcontentloaded" });
-  card = await waitForCard();
-  await waitForNotSyncedCaption();
-  assert.equal(await page.getByTestId("spotify-status").innerText(), "Last played");
-  assert.equal(
-    await card.getAttribute("aria-label"),
-    "Last played on Spotify: Last played Track title by Artist name",
-    "fallback aria-label",
-  );
-  assert.equal(await captionText(), "NOT SYNCED");
-
-  const apiResponse = await page.request.get(`${BASE_URL}/api/spotify`);
-  assert.equal(apiResponse.status(), 200, "API should return 200");
-  assert.match(
-    apiResponse.headers()["cache-control"] ?? "",
-    /s-maxage=30/,
-    "API cache header",
-  );
-  const apiText = await apiResponse.text();
-  const apiBody = JSON.parse(apiText);
-  assert.equal(apiBody.ok, false, "API should fall back without credentials");
-  assert.equal(apiBody.isPlaying, false, "fallback should not be playing");
-  assert.ok(!apiText.includes("SPOTIFY_"), "API body must not expose env names");
-  assert.ok(!apiText.includes("client_secret"), "API body must not expose secrets");
-  assert.deepEqual(
-    Object.keys(apiBody).sort(),
-    ["albumArt", "artists", "isPlaying", "ok", "title", "url"],
-    "API response shape",
-  );
-
-  mode = "last";
-  await page.reload({ waitUntil: "domcontentloaded" });
-  await waitForCard();
-  await waitForSyncedCaption();
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(250);
 
@@ -450,9 +288,7 @@ try {
   await runAxe("dark mobile");
 
   assert.deepEqual(consoleErrors, [], "console should have no errors");
-  console.log(
-    "about checks passed (1440, 1024, 768, 390; playing/last/failure)",
-  );
+  console.log("about checks passed (1440, 1024, 768, 390; no card)");
 } finally {
   await browser.close();
 }

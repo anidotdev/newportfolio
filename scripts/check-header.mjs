@@ -8,6 +8,25 @@ page.on("console", (message) => {
   if (message.type() === "error") consoleErrors.push(message.text());
 });
 
+await page.route("**/api/spotify", async (route) => {
+  try {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        ok: true,
+        isPlaying: false,
+        title: "Another track",
+        artists: ["Artist one", "Artist two"],
+        albumArt: null,
+        url: "https://open.spotify.com/track/last",
+      }),
+    });
+  } catch {
+    // The page can navigate away while a request is still pending.
+  }
+});
+
 try {
   await page.goto("http://localhost:3000", { waitUntil: "networkidle" });
   await page.evaluate(() => document.fonts.ready);
