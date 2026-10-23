@@ -46,25 +46,25 @@ export function Contact() {
         </h2>
       </SectionRow>
 
-      <SectionRow bordered={false} className="px-5 pb-8 pt-6">
+      <SectionRow bordered={false} className="px-5 pb-7 pt-5">
         <div className="grid gap-4 min-[700px]:grid-cols-2">
           <div
             data-testid="contact-panel-left"
             className="flex h-full min-w-0 flex-col rounded-2xl border border-hairline bg-surface-subtle p-5"
           >
-            <h3 className="text-lg font-semibold tracking-[-0.01em]">
+            <h3 className="text-lg font-semibold leading-6 tracking-[-0.01em]">
               {contact.getInTouch}
             </h3>
-            <p className="mt-2 text-[15px] leading-6 text-muted-foreground">
+            <p className="mt-1 text-[15px] leading-6 text-muted-foreground">
               {contact.intro}
             </p>
 
-            <ul className="mt-5">
+            <ul className="mt-4 flex min-h-0 flex-1 flex-col">
               {contact.channels.map((channel, index) => (
                 <li
                   key={channel.id}
                   className={cn(
-                    "flex min-h-16 items-center gap-2",
+                    "flex min-h-[60px] flex-1 items-center gap-2",
                     index < contact.channels.length - 1 &&
                       "border-b border-hairline",
                   )}
@@ -104,7 +104,10 @@ export function Contact() {
               ))}
             </ul>
 
-            <div className="mt-auto border-t border-hairline pt-4">
+            <div
+              data-testid="contact-availability"
+              className="border-t border-hairline pt-3.5"
+            >
               <div className="flex items-start gap-2.5">
                 <span
                   aria-hidden="true"
@@ -116,10 +119,10 @@ export function Contact() {
                   )}
                 />
                 <div className="min-w-0">
-                  <p className="text-[13px] font-medium leading-5">
+                  <p className="text-sm font-medium leading-5">
                     {contact.availability.text}
                   </p>
-                  <p className="mt-1 flex items-center gap-1.5 text-[13px] leading-5 text-muted-foreground">
+                  <p className="mt-1.5 flex items-center gap-1.5 text-sm leading-5 text-muted-foreground">
                     <Clock3
                       aria-hidden="true"
                       className="size-3.5 shrink-0"
@@ -136,9 +139,12 @@ export function Contact() {
             data-testid="contact-panel-right"
             className="flex h-full min-w-0 flex-col rounded-2xl border border-hairline bg-surface-subtle p-5"
           >
-            <h3 className="text-lg font-semibold tracking-[-0.01em]">
+            <h3 className="text-lg font-semibold leading-6 tracking-[-0.01em]">
               {contact.sendMessage}
             </h3>
+            <p className="mt-1 text-[15px] leading-6 text-muted-foreground">
+              {contact.sendIntro}
+            </p>
             <ContactForm />
           </div>
         </div>

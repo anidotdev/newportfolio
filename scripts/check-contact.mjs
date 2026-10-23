@@ -160,16 +160,69 @@ try {
   assert.ok(leftBox && rightBox);
   assert.equal(Math.round(leftBox.height), Math.round(rightBox.height), "equal panels");
   assert.equal(Math.round(rightBox.x - (leftBox.x + leftBox.width)), 16, "panel gap");
+  assert.ok(leftBox.height <= 540, "panels are at most 540px tall");
+  for (const panel of [left, right]) {
+    assert.equal(
+      await panel.evaluate((element) => getComputedStyle(element).padding),
+      "20px",
+      "panel padding",
+    );
+  }
+
+  for (const width of [1440, 1024, 768]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.waitForTimeout(120);
+    const compactLeft = await left.boundingBox();
+    const compactRight = await right.boundingBox();
+    assert.ok(compactLeft && compactRight);
+    assert.equal(
+      Math.round(compactLeft.height),
+      Math.round(compactRight.height),
+      `equal panels at ${width}`,
+    );
+    assert.ok(compactLeft.height <= 540, `panel height at ${width}`);
+    assert.equal(
+      await left.evaluate((element) => getComputedStyle(element).padding),
+      "20px",
+      `left panel padding at ${width}`,
+    );
+    assert.equal(
+      await right.evaluate((element) => getComputedStyle(element).padding),
+      "20px",
+      `right panel padding at ${width}`,
+    );
+    const chipTops = await page
+      .getByRole("radio")
+      .evaluateAll((nodes) => nodes.map((node) => node.offsetTop));
+    assert.equal(new Set(chipTops).size, 1, `chips stay on one row at ${width}`);
+  }
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForTimeout(120);
 
   const channels = left.locator("ul > li");
   assert.equal(await channels.count(), 3, "three contact channels");
+  const channelHeights = [];
   for (let index = 0; index < 3; index += 1) {
-    assert.equal(
-      Math.round((await channels.nth(index).boundingBox()).height),
-      64,
-      `channel row ${index + 1} height`,
-    );
+    const height = Math.round((await channels.nth(index).boundingBox()).height);
+    assert.ok(height >= 60, `channel row ${index + 1} min height`);
+    channelHeights.push(height);
   }
+  assert.ok(
+    Math.max(...channelHeights) - Math.min(...channelHeights) <= 1,
+    "channel rows share extra height evenly",
+  );
+  const lastChannel = await channels.nth(2).boundingBox();
+  const availability = await left.getByTestId("contact-availability").boundingBox();
+  assert.ok(lastChannel && availability);
+  const channelGap = availability.y - (lastChannel.y + lastChannel.height);
+  assert.ok(channelGap >= 0 && channelGap <= 8, "no dead gap above availability");
+  assert.equal(
+    await left
+      .getByTestId("contact-availability")
+      .evaluate((element) => getComputedStyle(element).paddingTop),
+    "14px",
+    "availability padding",
+  );
   assert.equal(
     await left.getByText("Open to internships and freelance work", { exact: true }).count(),
     1,
@@ -199,16 +252,38 @@ try {
     "copy announcement",
   );
 
+  assert.equal(
+    Math.round((await page.locator("#contact-name").boundingBox()).height),
+    44,
+    "input height",
+  );
+  assert.ok(
+    Number.parseFloat(
+      await page
+        .locator("#contact-message")
+        .evaluate((element) => getComputedStyle(element).minHeight),
+    ) >= 104,
+    "textarea min height",
+  );
+  assert.equal(
+    Math.round(
+      (await page.getByRole("button", { name: "Send message" }).boundingBox()).height,
+    ),
+    44,
+    "submit height",
+  );
+
   const projectTopic = page.getByRole("radio", { name: "Project" });
   assert.equal(await projectTopic.getAttribute("aria-checked"), "true");
-  assert.equal(Math.round((await projectTopic.boundingBox()).height), 36);
+  assert.equal(Math.round((await projectTopic.boundingBox()).height), 32);
+  assert.equal(await page.getByRole("radio", { name: "Say hi" }).count(), 1);
   await projectTopic.focus();
   await page.keyboard.press("ArrowRight");
-  const internshipTopic = page.getByRole("radio", { name: "Internship or job" });
-  assert.equal(await internshipTopic.getAttribute("aria-checked"), "true");
+  const jobTopic = page.getByRole("radio", { name: "Job" });
+  assert.equal(await jobTopic.getAttribute("aria-checked"), "true");
   assert.equal(
     await page.evaluate(() => document.activeElement?.textContent),
-    "Internship or job",
+    "Job",
     "topic arrow keys move focus",
   );
 
@@ -339,6 +414,11 @@ try {
   const notConfigured = page.getByTestId("contact-not-configured");
   await notConfigured.waitFor();
   assert.equal(
+    Math.round((await notConfigured.boundingBox()).height),
+    Math.round(formHeight),
+    "not-configured keeps compact height",
+  );
+  assert.equal(
     await page
       .getByText(
         "Messages can't be sent from this site yet. You can send it from your own email app instead.",
@@ -364,6 +444,10 @@ try {
   assert.ok(mobileLeft && mobileRight);
   assert.ok(mobileRight.y >= mobileLeft.y + mobileLeft.height, "panels stack at 390");
   assert.equal(Math.round(mobileLeft.width), Math.round(mobileRight.width));
+  const mobileChipTops = await page
+    .getByRole("radio")
+    .evaluateAll((nodes) => nodes.map((node) => node.offsetTop));
+  assert.equal(new Set(mobileChipTops).size, 1, "chips stay on one row at 390");
   await assertNoOverflow(390);
   await runAxe("dark mobile");
   await page.getByRole("button", { name: /Switch to light theme/ }).click();

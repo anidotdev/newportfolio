@@ -124,6 +124,7 @@ export type ContactConfig = {
   intro: string;
   getInTouch: string;
   sendMessage: string;
+  sendIntro: string;
   channels: ContactChannel[];
   copyEmail: {
     button: string;
@@ -428,6 +429,7 @@ export const siteConfig: SiteConfig = {
     intro: "Tell me what you're working on, and I'll get back to you.",
     getInTouch: "Get in touch",
     sendMessage: "Send a message",
+    sendIntro: "A project, a role, or a quick hello.",
     channels: [
       {
         id: "email",
@@ -471,8 +473,8 @@ export const siteConfig: SiteConfig = {
       topicLabel: "What is this about?",
       topics: [
         { value: "project", label: "Project" },
-        { value: "internship", label: "Internship or job" },
-        { value: "hello", label: "Just saying hi" },
+        { value: "internship", label: "Job" },
+        { value: "hello", label: "Say hi" },
       ],
       labels: {
         name: "Name",

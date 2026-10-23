@@ -23,7 +23,7 @@ type FieldErrors = Partial<Record<Field, string>>;
 type FormState = "idle" | "sending" | "success" | "error" | "not-configured";
 
 const FIELD_CLASS =
-  "mt-2 h-11 w-full min-w-0 rounded-lg border border-input bg-background px-3 text-base text-foreground outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/15 sm:text-sm";
+  "mt-1.5 block w-full min-w-0 rounded-[10px] border border-input bg-background px-3 text-[15px] leading-5 text-foreground outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/15";
 
 function fillTemplate(template: string, values: Record<string, string>) {
   return Object.entries(values).reduce(
@@ -246,7 +246,7 @@ export function ContactForm() {
       <div
         role="status"
         data-testid="contact-success"
-        className="mt-5 flex min-h-[560px] flex-col items-start justify-center rounded-xl border border-hairline bg-background/40 p-5"
+        className="mt-3.5 flex min-h-[432px] flex-col items-start justify-center rounded-xl border border-hairline bg-background/40 p-5"
       >
         <span className="flex size-10 items-center justify-center rounded-full bg-status-available/10 text-status-available">
           <Check aria-hidden="true" className="size-5" />
@@ -275,7 +275,7 @@ export function ContactForm() {
       <div
         role="alert"
         data-testid="contact-not-configured"
-        className="mt-5 flex min-h-[560px] flex-col items-start justify-center rounded-xl border border-hairline bg-background/40 p-5"
+        className="mt-3.5 flex min-h-[432px] flex-col items-start justify-center rounded-xl border border-hairline bg-background/40 p-5"
       >
         <span className="flex size-10 items-center justify-center rounded-full bg-surface-hover text-muted-foreground">
           <AlertCircle aria-hidden="true" className="size-5" />
@@ -297,19 +297,19 @@ export function ContactForm() {
       data-testid="contact-form"
       onSubmit={handleSubmit}
       aria-busy={formState === "sending"}
-      className="relative mt-5 flex min-h-[560px] min-w-0 flex-col"
+      className="relative mt-3.5 flex min-h-[432px] min-w-0 flex-col"
     >
       <div>
         <p
           id="contact-topic-label"
-          className="text-[13px] font-medium text-foreground"
+          className="text-[13px] font-medium leading-5 text-foreground"
         >
           {formCopy.topicLabel}
         </p>
         <div
           role="radiogroup"
           aria-labelledby="contact-topic-label"
-          className="mt-2 flex flex-wrap gap-2"
+          className="mt-2 flex flex-wrap gap-2 min-[360px]:flex-nowrap"
         >
           {formCopy.topics.map((option, index) => (
             <button
@@ -324,7 +324,7 @@ export function ContactForm() {
               onClick={() => setTopic(option.value)}
               onKeyDown={(event) => handleTopicKeyDown(event, index)}
               className={cn(
-                "h-9 rounded-full border px-3 text-[13px] font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                "relative inline-flex h-8 items-center whitespace-nowrap rounded-full border px-3 text-[13px] font-medium transition-colors duration-150 before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-[''] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                 topic === option.value
                   ? "border-foreground bg-foreground text-background"
                   : "border-hairline text-muted-foreground hover:bg-surface-hover hover:text-foreground",
@@ -336,11 +336,11 @@ export function ContactForm() {
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4">
+      <div className="mt-5 grid gap-3">
         <div>
           <label
             htmlFor="contact-name"
-            className="text-[13px] font-medium text-foreground"
+            className="block text-[13px] font-medium leading-5 text-foreground"
           >
             {formCopy.labels.name}
           </label>
@@ -358,7 +358,7 @@ export function ContactForm() {
             onBlur={() => handleBlur("name")}
             aria-invalid={errors.name ? true : undefined}
             aria-describedby={errors.name ? "contact-name-error" : undefined}
-            className={FIELD_CLASS}
+            className={cn(FIELD_CLASS, "h-11")}
           />
           {errors.name ? (
             <p
@@ -373,7 +373,7 @@ export function ContactForm() {
         <div>
           <label
             htmlFor="contact-email"
-            className="text-[13px] font-medium text-foreground"
+            className="block text-[13px] font-medium leading-5 text-foreground"
           >
             {formCopy.labels.email}
           </label>
@@ -391,7 +391,7 @@ export function ContactForm() {
             onBlur={() => handleBlur("email")}
             aria-invalid={errors.email ? true : undefined}
             aria-describedby={errors.email ? "contact-email-error" : undefined}
-            className={FIELD_CLASS}
+            className={cn(FIELD_CLASS, "h-11")}
           />
           {errors.email ? (
             <p
@@ -407,12 +407,12 @@ export function ContactForm() {
           <div className="flex items-baseline justify-between gap-3">
             <label
               htmlFor="contact-message"
-              className="text-[13px] font-medium text-foreground"
+              className="block text-[13px] font-medium leading-5 text-foreground"
             >
               {formCopy.labels.message}
             </label>
             {values.message.length >= 1600 ? (
-              <span className="font-mono text-[11px] text-muted-foreground">
+              <span className="whitespace-nowrap font-mono text-[11px] tabular-nums text-muted-foreground">
                 {values.message.length}/2000 {formCopy.counterLabel}
               </span>
             ) : null}
@@ -421,7 +421,7 @@ export function ContactForm() {
             ref={messageRef}
             id="contact-message"
             name="message"
-            rows={5}
+            rows={4}
             maxLength={2000}
             required
             value={values.message}
@@ -438,7 +438,10 @@ export function ContactForm() {
             aria-describedby={
               errors.message ? "contact-message-error" : undefined
             }
-            className={cn(FIELD_CLASS, "min-h-28 resize-y py-2.5")}
+            className={cn(
+              FIELD_CLASS,
+              "h-auto max-h-[200px] min-h-[104px] resize-y py-2.5",
+            )}
           />
           {errors.message ? (
             <p
@@ -468,7 +471,7 @@ export function ContactForm() {
         />
       </div>
 
-      <div className="mt-auto pt-5">
+      <div className="mt-3.5">
         {formState === "error" && formError ? (
           <div
             role="alert"
