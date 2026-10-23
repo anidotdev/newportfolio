@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ExternalLink } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  Link as LinkIcon,
+} from "lucide-react";
 
 import { ProjectGlyph } from "@/components/project-icons";
 import { SectionRow } from "@/components/section";
@@ -18,11 +23,26 @@ import { cn } from "@/lib/utils";
 const BODY_TEXT =
   "text-[15px] leading-[1.7333] text-foreground/90 md:text-base md:leading-[1.8]";
 
-function formatPeriod(period: Project["period"]) {
+function formatPeriod(period: Project["period"], labels: ProjectsConfig["labels"]) {
+  const start = period.start.trim();
   const end = period.end?.trim();
-  if (!end) return `${period.start} – ∞`;
-  if (end === period.start) return period.start;
-  return `${period.start} – ${end}`;
+  if (!end) return `${start}\u2009–\u2009${labels.present}`;
+  return `${start}\u2009–\u2009${end}`;
+}
+
+function formatPeriodAria(
+  period: Project["period"],
+  labels: ProjectsConfig["labels"],
+) {
+  const start = period.start.trim();
+  const end = period.end?.trim();
+  if (!end) {
+    return labels.periodAria
+      .replace("{start}", start)
+      .replace("{end}", labels.presentAria);
+  }
+
+  return labels.periodAria.replace("{start}", start).replace("{end}", end);
 }
 
 function isExternalUrl(url?: string): url is string {
@@ -69,6 +89,7 @@ function ProjectItem({
   const panelId = `project-panel-${project.id}`;
   const titleId = `project-title-${project.id}`;
   const url = isExternalUrl(project.url) ? project.url : null;
+  const periodLabel = formatPeriodAria(project.period, labels);
   const hasDetails = Boolean(
     project.description ||
       project.intro?.length ||
@@ -112,11 +133,12 @@ function ProjectItem({
 
           <p
             data-testid="project-period"
+            aria-label={periodLabel}
             className="mt-1 font-mono text-[15px] leading-tight text-muted-foreground"
           >
-            <span className="sr-only">{labels.period}: </span>
-            <span data-testid="project-period-value">
-              {formatPeriod(project.period)}
+            <span className="sr-only">{periodLabel}</span>
+            <span data-testid="project-period-value" aria-hidden="true">
+              {formatPeriod(project.period, labels)}
             </span>
           </p>
         </div>
@@ -134,9 +156,13 @@ function ProjectItem({
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={`${labels.openProject}: ${project.name}`}
+                aria-label={`${labels.openProject} ${project.name}`}
               >
-                <ExternalLink aria-hidden="true" className="size-4" />
+                <LinkIcon
+                  aria-hidden="true"
+                  data-icon="link"
+                  className="size-4"
+                />
               </a>
             </Button>
           ) : null}
@@ -151,17 +177,23 @@ function ProjectItem({
               aria-controls={panelId}
               aria-label={`${
                 open ? labels.hideDetails : labels.showDetails
-              }: ${project.name}`}
+              } ${project.name}`}
               onClick={() => onToggle(project.id)}
               className="text-muted-foreground"
             >
-              <ChevronDown
-                aria-hidden="true"
-                className={cn(
-                  "size-4 motion-safe:transition-transform motion-safe:duration-150",
-                  open && "rotate-180",
-                )}
-              />
+              {open ? (
+                <ChevronsDownUp
+                  aria-hidden="true"
+                  data-icon="collapse"
+                  className="size-4"
+                />
+              ) : (
+                <ChevronsUpDown
+                  aria-hidden="true"
+                  data-icon="expand"
+                  className="size-4"
+                />
+              )}
             </Button>
           ) : null}
         </div>

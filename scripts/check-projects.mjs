@@ -11,27 +11,27 @@ const BASE_URL = "http://localhost:3000";
 const EXPECTED = [
   {
     name: "Placeholder project one",
-    period: "MM.YYYY – ∞",
+    period: "MM.YYYY\u2009–\u2009Present",
     hasLink: true,
   },
   {
     name: "Placeholder project two",
-    period: "MM.YYYY",
+    period: "MM.YYYY\u2009–\u2009MM.YYYY",
     hasLink: true,
   },
   {
     name: "Placeholder project three",
-    period: "MM.YYYY – ∞",
+    period: "MM.YYYY\u2009–\u2009Present",
     hasLink: false,
   },
   {
     name: "Placeholder project four",
-    period: "MM.YYYY – ∞",
+    period: "MM.YYYY\u2009–\u2009Present",
     hasLink: false,
   },
   {
     name: "Placeholder project five",
-    period: "MM.YYYY",
+    period: "MM.YYYY\u2009–\u2009MM.YYYY",
     hasLink: true,
   },
 ];
@@ -190,6 +190,21 @@ try {
     EXPECTED.map((project) => project.period),
     "project periods",
   );
+  assert.equal(
+    (await page.locator("body").innerText()).includes("∞"),
+    false,
+    "infinity should not appear anywhere",
+  );
+  assert.equal(
+    await projects.getByTestId("project-period").first().getAttribute("aria-label"),
+    "from MM.YYYY to present",
+    "open-ended period screen-reader label",
+  );
+  assert.equal(
+    await projects.getByTestId("project-period").nth(1).getAttribute("aria-label"),
+    "from MM.YYYY to MM.YYYY",
+    "ended period screen-reader label",
+  );
 
   const icons = projects.getByTestId("project-icon");
   assert.equal(await icons.count(), EXPECTED.length, "project icons");
@@ -331,11 +346,26 @@ try {
   assert.equal(await firstLink.getAttribute("rel"), "noopener noreferrer");
   assert.equal(
     await firstLink.getAttribute("aria-label"),
-    "Open project: Placeholder project one",
+    "Open Placeholder project one",
+  );
+  assert.equal(
+    await firstLink.locator("svg[data-icon='link']").count(),
+    1,
+    "project link should use the chain icon",
   );
   assert.equal(
     await disclosures.nth(0).getAttribute("aria-label"),
-    "Hide project details: Placeholder project one",
+    "Collapse Placeholder project one",
+  );
+  assert.equal(
+    await disclosures.nth(0).locator("svg[data-icon='collapse']").count(),
+    1,
+    "open project should use chevrons-down-up",
+  );
+  assert.equal(
+    await disclosures.nth(1).locator("svg[data-icon='expand']").count(),
+    1,
+    "closed project should use chevrons-up-down",
   );
 
   const panels = projects.getByTestId("project-panel");
@@ -357,7 +387,7 @@ try {
   );
   assert.equal(
     await disclosures.nth(0).getAttribute("aria-label"),
-    "Hide project details: Placeholder project one",
+    "Collapse Placeholder project one",
   );
   assert.equal(
     await disclosures.nth(1).getAttribute("aria-expanded"),
@@ -412,6 +442,16 @@ try {
     await disclosures.nth(1).getAttribute("aria-expanded"),
     "true",
     "second project should be open",
+  );
+  assert.equal(
+    await disclosures.nth(0).locator("svg[data-icon='expand']").count(),
+    1,
+    "closed first project swaps back to chevrons-up-down",
+  );
+  assert.equal(
+    await disclosures.nth(1).locator("svg[data-icon='collapse']").count(),
+    1,
+    "open second project uses chevrons-down-up",
   );
   assert.equal(Math.round(await panelHeight(panels.nth(0))), 0);
   assert.ok((await panelHeight(panels.nth(1))) > 0);

@@ -96,6 +96,9 @@ export type ProjectsConfig = {
     showMore: string;
     showLess: string;
     period: string;
+    periodAria: string;
+    present: string;
+    presentAria: string;
     features: string;
     tags: string;
   };
@@ -236,12 +239,15 @@ export const siteConfig: SiteConfig = {
       other: "projects",
     },
     labels: {
-      openProject: "Open project",
-      showDetails: "Show project details",
-      hideDetails: "Hide project details",
+      openProject: "Open",
+      showDetails: "Expand",
+      hideDetails: "Collapse",
       showMore: "Show more",
       showLess: "Show less",
       period: "Period",
+      periodAria: "from {start} to {end}",
+      present: "Present",
+      presentAria: "present",
       features: "Key features",
       tags: "Technologies",
     },
