@@ -161,8 +161,8 @@ try {
     "section title size",
   );
 
-  const bioLink = bio.getByRole("link", { name: "sample link" });
-  assert.equal(await bioLink.getAttribute("href"), "https://example.com");
+  const bioLink = bio.getByRole("link", { name: "Github" });
+  assert.equal(await bioLink.getAttribute("href"), "https://github.com/anidotdev");
   assert.equal(await bioLink.getAttribute("target"), "_blank");
   assert.equal(await bioLink.getAttribute("rel"), "noopener noreferrer");
 
@@ -193,7 +193,7 @@ try {
   });
   assert.deepEqual(shellBorders, ["1px", "1px"], "shell edge hairlines");
 
-  const separators = page.getByTestId("section-separator");
+  const separators = about.getByTestId("section-separator");
   assert.equal(await separators.count(), 2, "two hatch separators");
   for (let index = 0; index < 2; index += 1) {
     const separator = separators.nth(index);

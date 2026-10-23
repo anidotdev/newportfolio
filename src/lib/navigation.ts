@@ -39,6 +39,11 @@ export function navigateTo(href: string, external = isExternalHref(href)) {
     return;
   }
 
+  if (!href.startsWith("/") && !href.startsWith("#")) {
+    window.location.href = href;
+    return;
+  }
+
   const target = new URL(href, window.location.origin);
   const reduceMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",

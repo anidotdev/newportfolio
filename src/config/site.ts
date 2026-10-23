@@ -175,6 +175,24 @@ export type ContactConfig = {
   };
 };
 
+export type FooterLink = {
+  label: string;
+  href: string;
+  external?: boolean;
+};
+
+export type FooterConfig = {
+  columnTitles: {
+    navigate: string;
+    socials: string;
+    elsewhere: string;
+  };
+  elsewhere: FooterLink[];
+  builtWith: string;
+  backToTop: string;
+  wordmark: string;
+};
+
 export type SpotifyTrack = {
   title: string;
   artists: string[];
@@ -213,11 +231,15 @@ type SiteConfig = {
   about: AboutConfig;
   projects: ProjectsConfig;
   contact: ContactConfig;
+  footer: FooterConfig;
   spotify: SpotifyConfig;
 };
 
 // TODO: replace with your real contact email.
 const CONTACT_EMAIL = "hello@example.com";
+// TODO: replace with the final Medium URL.
+// Placeholder: https://medium.com/@your-handle
+const BLOG_URL = "https://medium.com/@anidotdev";
 
 export const siteConfig: SiteConfig = {
   name: "Ani",
@@ -235,9 +257,7 @@ export const siteConfig: SiteConfig = {
     { label: "Projects", href: "/#projects", shortcut: "G P" },
     {
       label: "Blog",
-      // TODO: replace with the final Medium URL.
-      // Placeholder: https://medium.com/@your-handle
-      href: "https://medium.com/@anidotdev",
+      href: BLOG_URL,
       external: true,
       shortcut: "G B",
     },
@@ -489,6 +509,20 @@ export const siteConfig: SiteConfig = {
       emailSubject: "Portfolio message from {name}",
       emailBody: "Name: {name}\nEmail: {email}\nTopic: {topic}\n\n{message}",
     },
+  },
+  footer: {
+    columnTitles: {
+      navigate: "Navigate",
+      socials: "Socials",
+      elsewhere: "Elsewhere",
+    },
+    elsewhere: [
+      { label: "Medium", href: BLOG_URL, external: true },
+      { label: "Email", href: `mailto:${CONTACT_EMAIL}` },
+    ],
+    builtWith: "Built with Next.js and Tailwind CSS",
+    backToTop: "Back to top",
+    wordmark: "Animesh",
   },
   spotify: {
     fallback: {

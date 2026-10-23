@@ -50,7 +50,7 @@ export function Contact() {
         <div className="grid gap-4 min-[700px]:grid-cols-2">
           <div
             data-testid="contact-panel-left"
-            className="flex h-full flex-col rounded-2xl border border-hairline bg-surface-subtle p-5"
+            className="flex h-full min-w-0 flex-col rounded-2xl border border-hairline bg-surface-subtle p-5"
           >
             <h3 className="text-lg font-semibold tracking-[-0.01em]">
               {contact.getInTouch}
@@ -134,7 +134,7 @@ export function Contact() {
 
           <div
             data-testid="contact-panel-right"
-            className="flex h-full flex-col rounded-2xl border border-hairline bg-surface-subtle p-5"
+            className="flex h-full min-w-0 flex-col rounded-2xl border border-hairline bg-surface-subtle p-5"
           >
             <h3 className="text-lg font-semibold tracking-[-0.01em]">
               {contact.sendMessage}

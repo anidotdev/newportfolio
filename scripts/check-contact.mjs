@@ -379,7 +379,7 @@ try {
   await page.waitForTimeout(200);
   await runAxe("dark desktop");
 
-  for (const width of [1440, 1024, 768, 390]) {
+  for (const width of [1440, 1024, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
     await page.waitForTimeout(150);
     await assertNoOverflow(width);
@@ -438,7 +438,7 @@ try {
   await page.emulateMedia({ reducedMotion: "no-preference" });
 
   assert.deepEqual(consoleErrors, [], "console should have no errors");
-  console.log("contact checks passed (1440, 390; form states; copy; API; axe)");
+  console.log("contact checks passed (1440, 1024, 768, 390, 320; form states; copy; API; axe)");
 } finally {
   await browser.close();
 }

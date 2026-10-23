@@ -14,6 +14,7 @@
     "check:about": "node scripts/check-about.mjs",
     "check:projects": "node scripts/check-projects.mjs",
     "check:contact": "node scripts/check-contact.mjs",
+    "check:footer": "node scripts/check-footer.mjs",
     "spotify:token": "node scripts/spotify-token.mjs"
   },
   "dependencies": {

@@ -1,8 +1,19 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
 import { chromium } from "playwright";
 
 const BASE_URL = "http://localhost:3000";
+const siteSource = readFileSync(
+  new URL("../src/config/site.ts", import.meta.url),
+  "utf8",
+);
+const socialsStart = siteSource.indexOf("socials: [");
+const socialBlock = siteSource.slice(
+  socialsStart,
+  siteSource.indexOf("socialNote:", socialsStart),
+);
+const SOCIAL_COUNT = (socialBlock.match(/href:/g) ?? []).length;
 
 const playing = {
   ok: true,
@@ -313,6 +324,7 @@ try {
     0,
     "profile information group should be removed",
   );
+  const hero = page.locator('section[aria-labelledby="profile-name"]');
   for (const text of [
     "West Bengal, India",
     "hello@example.com",
@@ -320,19 +332,19 @@ try {
     "same time",
   ]) {
     assert.equal(
-      await page.getByText(text, { exact: true }).count(),
+      await hero.getByText(text, { exact: true }).count(),
       0,
       `${text} should be removed`,
     );
   }
-  assert.equal(await page.locator('a[href^="mailto:"]').count(), 0);
-  assert.equal(await page.locator('a[href^="tel:"]').count(), 0);
+  assert.equal(await hero.locator('a[href^="mailto:"]').count(), 0);
+  assert.equal(await hero.locator('a[href^="tel:"]').count(), 0);
 
   const socialNav = page.getByRole("navigation", { name: "Social links" });
   assert.equal(await socialNav.count(), 1, "social nav");
   const socials = page.getByTestId("social-link");
-  assert.equal(await socials.count(), 5, "social link count");
-  for (let index = 0; index < 5; index += 1) {
+  assert.equal(await socials.count(), SOCIAL_COUNT, "social link count");
+  for (let index = 0; index < SOCIAL_COUNT; index += 1) {
     const social = socials.nth(index);
     assert.ok(await social.isVisible(), `social link ${index} visible`);
     assert.ok(await social.getAttribute("href"), `social link ${index} href`);
@@ -509,7 +521,7 @@ try {
       `hatch should span the viewport at ${width}`,
     );
 
-    for (let index = 0; index < 5; index += 1) {
+    for (let index = 0; index < SOCIAL_COUNT; index += 1) {
       const social = await box(socials.nth(index));
       assert.equal(Math.round(social.width), 40, `social width at ${width}`);
       assert.equal(Math.round(social.height), 40, `social height at ${width}`);

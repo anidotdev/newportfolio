@@ -23,7 +23,7 @@ type FieldErrors = Partial<Record<Field, string>>;
 type FormState = "idle" | "sending" | "success" | "error" | "not-configured";
 
 const FIELD_CLASS =
-  "mt-2 h-11 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/15";
+  "mt-2 h-11 w-full min-w-0 rounded-lg border border-input bg-background px-3 text-base text-foreground outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/15 sm:text-sm";
 
 function fillTemplate(template: string, values: Record<string, string>) {
   return Object.entries(values).reduce(
@@ -297,7 +297,7 @@ export function ContactForm() {
       data-testid="contact-form"
       onSubmit={handleSubmit}
       aria-busy={formState === "sending"}
-      className="relative mt-5 flex min-h-[560px] flex-col"
+      className="relative mt-5 flex min-h-[560px] min-w-0 flex-col"
     >
       <div>
         <p
@@ -349,6 +349,7 @@ export function ContactForm() {
             id="contact-name"
             name="name"
             type="text"
+            required
             autoComplete="name"
             maxLength={100}
             value={values.name}
@@ -381,6 +382,7 @@ export function ContactForm() {
             id="contact-email"
             name="email"
             type="email"
+            required
             autoComplete="email"
             maxLength={200}
             value={values.email}
@@ -421,6 +423,7 @@ export function ContactForm() {
             name="message"
             rows={5}
             maxLength={2000}
+            required
             value={values.message}
             placeholder={formCopy.placeholders.message}
             onChange={(event) => updateValue("message", event.target.value)}
