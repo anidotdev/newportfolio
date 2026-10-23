@@ -125,6 +125,7 @@ type SiteConfig = {
   description: string;
   homeHref: string;
   contactHref: string;
+  email: string;
   labels: {
     contact: string;
     opensInNewTab: string;
@@ -147,6 +148,8 @@ export const siteConfig: SiteConfig = {
   description: "Software engineer and builder.",
   homeHref: "/",
   contactHref: "/#contact",
+  // TODO: replace with your real contact email.
+  email: "hello@example.com",
   labels: {
     contact: "Contact",
     opensInNewTab: "opens in new tab",

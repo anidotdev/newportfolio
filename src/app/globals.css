@@ -166,6 +166,16 @@
     line-height: 1;
     color: var(--foreground);
   }
+
+  .command-shortcut {
+    display: none;
+  }
+
+  @media (min-width: 768px) and (pointer: fine) {
+    .command-shortcut {
+      display: flex;
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -176,5 +186,10 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  [data-slot="dialog-content"],
+  [data-slot="dialog-overlay"] {
+    animation: none !important;
   }
 }

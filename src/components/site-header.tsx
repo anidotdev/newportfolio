@@ -6,16 +6,16 @@ import { usePathname } from "next/navigation";
 import { Search, Star } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 
+import {
+  CommandPaletteProvider,
+  useCommandPalette,
+} from "@/components/command-palette";
 import { MobileMenu } from "@/components/mobile-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { siteConfig, type NavItem } from "@/config/site";
 import { useIsMac } from "@/lib/client";
 import { isNavItemActive, navigateTo } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-
-function onSearchOpen() {
-  // TODO: open the command palette / search dialog.
-}
 
 function GithubMark() {
   return (
@@ -98,27 +98,14 @@ function NavLink({
 
 function SearchButton() {
   const isMac = useIsMac();
-
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (
-        (event.metaKey || event.ctrlKey) &&
-        event.key.toLowerCase() === "k"
-      ) {
-        event.preventDefault();
-        onSearchOpen();
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  const { openPalette } = useCommandPalette();
 
   return (
     <button
       type="button"
+      data-command-trigger
       aria-keyshortcuts="Control+K Meta+K"
-      onClick={onSearchOpen}
+      onClick={(event) => openPalette(event.currentTarget)}
       className="flex h-8 cursor-pointer items-center gap-1.5 rounded-md pl-1.5 pr-1 text-muted-foreground transition-[color,background-color,scale] duration-150 ease-out hover:bg-chip hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-safe:active:scale-[0.96]"
     >
       <span className="sr-only">Search</span>
@@ -131,6 +118,23 @@ function SearchButton() {
           K
         </kbd>
       </span>
+    </button>
+  );
+}
+
+function MobileSearchButton() {
+  const { openPalette } = useCommandPalette();
+
+  return (
+    <button
+      type="button"
+      data-command-trigger
+      aria-label="Search"
+      aria-keyshortcuts="Control+K Meta+K"
+      onClick={(event) => openPalette(event.currentTarget)}
+      className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-[color,background-color,scale] duration-150 ease-out hover:bg-chip hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-safe:active:scale-[0.96]"
+    >
+      <Search aria-hidden="true" className="size-[18px]" strokeWidth={1.75} />
     </button>
   );
 }
@@ -216,21 +220,24 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 h-16 w-full border-b border-hairline bg-background/80 backdrop-blur-md">
-      <div className="mx-auto flex h-full w-full max-w-[var(--container-max)] items-center justify-between border-x border-hairline px-5">
-        <Link
-          href={siteConfig.homeHref}
-          className="shrink-0 rounded-sm font-brand text-[2rem] leading-none tracking-[-0.01em] text-foreground transition-opacity duration-150 hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-        >
-          {siteConfig.name}
-        </Link>
+      <CommandPaletteProvider>
+        <div className="mx-auto flex h-full w-full max-w-[var(--container-max)] items-center justify-between border-x border-hairline px-5">
+          <Link
+            href={siteConfig.homeHref}
+            className="shrink-0 rounded-sm font-brand text-[2rem] leading-none tracking-[-0.01em] text-foreground transition-opacity duration-150 hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            {siteConfig.name}
+          </Link>
 
-        <div className="flex items-center gap-1 md:hidden">
-          <ThemeToggle />
-          <MobileMenu projectsInView={projectsInView} />
+          <div className="flex items-center gap-1 md:hidden">
+            <MobileSearchButton />
+            <ThemeToggle />
+            <MobileMenu projectsInView={projectsInView} />
+          </div>
+
+          <DesktopNav projectsInView={projectsInView} />
         </div>
-
-        <DesktopNav projectsInView={projectsInView} />
-      </div>
+      </CommandPaletteProvider>
     </header>
   );
 }
