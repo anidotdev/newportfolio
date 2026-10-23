@@ -114,17 +114,13 @@ export type ContactChannel = {
   external: boolean;
 };
 
-export type ContactTopic = {
-  value: string;
-  label: string;
-};
-
 export type ContactConfig = {
   heading: string;
   intro: string;
   getInTouch: string;
   sendMessage: string;
   sendIntro: string;
+  mailtoSubject: string;
   channels: ContactChannel[];
   copyEmail: {
     button: string;
@@ -138,8 +134,6 @@ export type ContactConfig = {
     replyTime: string;
   };
   form: {
-    topicLabel: string;
-    topics: ContactTopic[];
     labels: {
       name: string;
       email: string;
@@ -159,7 +153,6 @@ export type ContactConfig = {
       message: string;
       messageShort: string;
       messageLong: string;
-      topic: string;
     };
     counterLabel: string;
     submit: string;
@@ -171,7 +164,6 @@ export type ContactConfig = {
     rateLimited: string;
     notConfigured: string;
     openEmailApp: string;
-    emailSubject: string;
     emailBody: string;
   };
 };
@@ -430,6 +422,7 @@ export const siteConfig: SiteConfig = {
     getInTouch: "Get in touch",
     sendMessage: "Send a message",
     sendIntro: "A project, a role, or a quick hello.",
+    mailtoSubject: "Hello from your portfolio",
     channels: [
       {
         id: "email",
@@ -470,12 +463,6 @@ export const siteConfig: SiteConfig = {
       replyTime: "Usually replies in 1–2 days",
     },
     form: {
-      topicLabel: "What is this about?",
-      topics: [
-        { value: "project", label: "Project" },
-        { value: "internship", label: "Job" },
-        { value: "hello", label: "Say hi" },
-      ],
       labels: {
         name: "Name",
         email: "Email",
@@ -495,7 +482,6 @@ export const siteConfig: SiteConfig = {
         message: "Write a message.",
         messageShort: "Use at least 10 characters.",
         messageLong: "Use 2,000 characters or fewer.",
-        topic: "Choose a valid topic.",
       },
       counterLabel: "characters used",
       submit: "Send message",
@@ -508,8 +494,7 @@ export const siteConfig: SiteConfig = {
       notConfigured:
         "Messages can't be sent from this site yet. You can send it from your own email app instead.",
       openEmailApp: "Open email app",
-      emailSubject: "Portfolio message from {name}",
-      emailBody: "Name: {name}\nEmail: {email}\nTopic: {topic}\n\n{message}",
+      emailBody: "Name: {name}\nEmail: {email}\n\n{message}",
     },
   },
   footer: {

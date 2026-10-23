@@ -40,7 +40,6 @@ export async function POST(request: Request) {
   const form = siteConfig.contact.form;
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const email = typeof body.email === "string" ? body.email.trim() : "";
-  const topic = typeof body.topic === "string" ? body.topic.trim() : "";
   const message = typeof body.message === "string" ? body.message.trim() : "";
   const fields: Record<string, string> = {};
 
@@ -58,9 +57,6 @@ export async function POST(request: Request) {
   else if (message.length > 2000) {
     fields.message = form.errors.messageLong;
   }
-
-  const topicOption = form.topics.find((option) => option.value === topic);
-  if (!topicOption) fields.topic = form.errors.topic;
 
   if (Object.keys(fields).length > 0) {
     return json({ ok: false, error: "validation", fields }, 400);
@@ -87,12 +83,9 @@ export async function POST(request: Request) {
     return json({ ok: false, error: "not_configured" }, 503);
   }
 
-  const subject = stripNewlines(
-    `Portfolio message from ${name}`,
-  );
+  const subject = stripNewlines(`New message from ${name}`);
   const text = [
     `New message from ${stripNewlines(name)} <${stripNewlines(email)}>`,
-    `Topic: ${topicOption?.label ?? topic}`,
     "",
     message,
   ].join("\n");

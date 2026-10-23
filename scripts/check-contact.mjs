@@ -13,6 +13,29 @@ const SPOTIFY = {
   url: "https://open.spotify.com/track/last",
 };
 
+function parseRgb(value) {
+  const match = value.match(/rgba?\(([^)]+)\)/);
+  if (!match) return null;
+  return match[1]
+    .split(",")
+    .slice(0, 3)
+    .map((channel) => Number.parseFloat(channel.trim()));
+}
+
+function luminance([r, g, b]) {
+  const channels = [r, g, b].map((channel) => {
+    const value = channel / 255;
+    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+}
+
+function contrastRatio(first, second) {
+  const high = Math.max(luminance(first), luminance(second));
+  const low = Math.min(luminance(first), luminance(second));
+  return (high + 0.05) / (low + 0.05);
+}
+
 const browser = await chromium.launch();
 const context = await browser.newContext({
   viewport: { width: 1440, height: 900 },
@@ -48,8 +71,12 @@ await page.route("**/api/spotify", async (route) => {
 
 let contactMode = "success";
 let contactDelay = 0;
+let lastContactBody = null;
 
 await page.route("**/api/contact", async (route) => {
+  const body = route.request().postDataJSON();
+  if (body && typeof body === "object") lastContactBody = body;
+
   if (contactDelay) {
     await new Promise((resolve) => setTimeout(resolve, contactDelay));
   }
@@ -114,6 +141,24 @@ async function assertNoOverflow(width) {
   );
 }
 
+async function assertPlaceholderContrast(label) {
+  const colors = await page.evaluate(() => {
+    const field = document.querySelector("#contact-name");
+    return {
+      placeholder: getComputedStyle(field, "::placeholder").color,
+      background: getComputedStyle(field).backgroundColor,
+    };
+  });
+  const placeholder = parseRgb(colors.placeholder);
+  const background = parseRgb(colors.background);
+  assert.ok(placeholder && background, `${label} placeholder colors parse`);
+  const ratio = contrastRatio(placeholder, background);
+  assert.ok(
+    ratio >= 4.5,
+    `${label} placeholder contrast ${ratio.toFixed(2)}:1`,
+  );
+}
+
 async function runAxe(theme) {
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
@@ -160,7 +205,7 @@ try {
   assert.ok(leftBox && rightBox);
   assert.equal(Math.round(leftBox.height), Math.round(rightBox.height), "equal panels");
   assert.equal(Math.round(rightBox.x - (leftBox.x + leftBox.width)), 16, "panel gap");
-  assert.ok(leftBox.height <= 540, "panels are at most 540px tall");
+  assert.ok(leftBox.height <= 400, "panels are at most 400px tall");
   for (const panel of [left, right]) {
     assert.equal(
       await panel.evaluate((element) => getComputedStyle(element).padding),
@@ -180,7 +225,7 @@ try {
       Math.round(compactRight.height),
       `equal panels at ${width}`,
     );
-    assert.ok(compactLeft.height <= 540, `panel height at ${width}`);
+    assert.ok(compactLeft.height <= 400, `panel height at ${width}`);
     assert.equal(
       await left.evaluate((element) => getComputedStyle(element).padding),
       "20px",
@@ -191,10 +236,6 @@ try {
       "20px",
       `right panel padding at ${width}`,
     );
-    const chipTops = await page
-      .getByRole("radio")
-      .evaluateAll((nodes) => nodes.map((node) => node.offsetTop));
-    assert.equal(new Set(chipTops).size, 1, `chips stay on one row at ${width}`);
   }
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.waitForTimeout(120);
@@ -273,18 +314,46 @@ try {
     "submit height",
   );
 
-  const projectTopic = page.getByRole("radio", { name: "Project" });
-  assert.equal(await projectTopic.getAttribute("aria-checked"), "true");
-  assert.equal(Math.round((await projectTopic.boundingBox()).height), 32);
-  assert.equal(await page.getByRole("radio", { name: "Say hi" }).count(), 1);
-  await projectTopic.focus();
-  await page.keyboard.press("ArrowRight");
-  const jobTopic = page.getByRole("radio", { name: "Job" });
-  assert.equal(await jobTopic.getAttribute("aria-checked"), "true");
+  for (const [id, name] of [
+    ["contact-name", "Name"],
+    ["contact-email", "Email"],
+    ["contact-message", "Message"],
+  ]) {
+    assert.equal(
+      await page.getByRole("textbox", { name }).count(),
+      1,
+      `${name} accessible name`,
+    );
+    const label = page.locator(`label[for="${id}"]`);
+    assert.match(
+      (await label.getAttribute("class")) ?? "",
+      /\bsr-only\b/,
+      `${name} label is sr-only`,
+    );
+    const labelBox = await label.boundingBox();
+    assert.ok(
+      labelBox && labelBox.width <= 1 && labelBox.height <= 1,
+      `${name} label is not visibly rendered`,
+    );
+  }
   assert.equal(
-    await page.evaluate(() => document.activeElement?.textContent),
-    "Job",
-    "topic arrow keys move focus",
+    await page.getByText("What is this about?", { exact: true }).count(),
+    0,
+    "topic label is gone",
+  );
+  assert.equal(await page.getByRole("radiogroup").count(), 0, "no radiogroup");
+  assert.equal(await page.getByRole("radio").count(), 0, "no topic chips");
+  await assertPlaceholderContrast("dark desktop");
+
+  const submit = page.getByRole("button", { name: "Send message" });
+  const submitBox = await submit.boundingBox();
+  const rightPanelBox = await right.boundingBox();
+  assert.ok(submitBox && rightPanelBox);
+  assert.ok(
+    Math.abs(
+      submitBox.y + submitBox.height + 20 - (rightPanelBox.y + rightPanelBox.height),
+    ) <= 1,
+    "no dead gap below submit",
   );
 
   const website = page.locator("#contact-website");
@@ -303,11 +372,36 @@ try {
   assert.ok(honeypot.x + honeypot.width < 0, "honeypot is off-screen");
 
   await page.locator("#contact-name").fill("x".repeat(100));
+  await page.locator("#contact-email").fill("ada@example.com");
   await page.locator("#contact-message").fill("y".repeat(1600));
   assert.equal(
     await page.getByText("1600/2000 characters used", { exact: true }).count(),
     1,
     "character counter at 80%",
+  );
+  const longFormHeight = (await form.boundingBox()).height;
+  assert.equal(
+    Math.round(longFormHeight),
+    268,
+    "counter does not change form height",
+  );
+  assert.equal(
+    Math.round((await right.boundingBox()).height),
+    Math.round(rightBox.height),
+    "counter does not change panel height",
+  );
+  contactMode = "success";
+  await page.getByRole("button", { name: "Send message" }).click();
+  await success.waitFor();
+  assert.equal(
+    Math.round((await success.boundingBox()).height),
+    Math.round(longFormHeight),
+    "long message keeps success height",
+  );
+  assert.equal(
+    Math.round((await right.boundingBox()).height),
+    Math.round(rightBox.height),
+    "long message keeps success panel height",
   );
 
   await page.reload({ waitUntil: "networkidle" });
@@ -349,6 +443,8 @@ try {
   );
   await success.waitFor();
   contactDelay = 0;
+  assert.ok(lastContactBody, "client posted the contact form");
+  assert.equal("topic" in lastContactBody, false, "client omits topic");
   assert.equal(
     await page.getByText("Message sent", { exact: true }).count(),
     1,
@@ -361,6 +457,11 @@ try {
   );
   const successHeight = (await success.boundingBox()).height;
   assert.equal(Math.round(successHeight), Math.round(formHeight), "success keeps height");
+  assert.equal(
+    Math.round((await right.boundingBox()).height),
+    Math.round(rightBox.height),
+    "success keeps panel height",
+  );
   await page.getByRole("button", { name: "Send another" }).click();
   await form.waitFor();
   assert.equal(await page.locator("#contact-name").inputValue(), "");
@@ -419,6 +520,11 @@ try {
     "not-configured keeps compact height",
   );
   assert.equal(
+    Math.round((await right.boundingBox()).height),
+    Math.round(rightBox.height),
+    "not-configured keeps panel height",
+  );
+  assert.equal(
     await page
       .getByText(
         "Messages can't be sent from this site yet. You can send it from your own email app instead.",
@@ -428,10 +534,19 @@ try {
     1,
   );
   const mailto = notConfigured.getByRole("link", { name: "Open email app" });
-  assert.match(
+  const mailtoHref = decodeURIComponent(
     (await mailto.getAttribute("href")) ?? "",
-    /^mailto:hello@example\.com\?subject=Portfolio%20message%20from%20Ada/,
   );
+  assert.match(
+    mailtoHref,
+    /^mailto:hello@example\.com\?subject=Hello from your portfolio&body=/,
+  );
+  assert.match(
+    mailtoHref,
+    /I would like to talk about a small data project\./,
+    "mailto body contains the message",
+  );
+  assert.equal(/topic/i.test(mailtoHref), false, "mailto has no topic");
   assert.equal(page.url(), `${BASE_URL}/#contact`.replace("/#contact", "/"), "no mail auto-open");
 
   contactMode = "success";
@@ -444,16 +559,14 @@ try {
   assert.ok(mobileLeft && mobileRight);
   assert.ok(mobileRight.y >= mobileLeft.y + mobileLeft.height, "panels stack at 390");
   assert.equal(Math.round(mobileLeft.width), Math.round(mobileRight.width));
-  const mobileChipTops = await page
-    .getByRole("radio")
-    .evaluateAll((nodes) => nodes.map((node) => node.offsetTop));
-  assert.equal(new Set(mobileChipTops).size, 1, "chips stay on one row at 390");
   await assertNoOverflow(390);
   await runAxe("dark mobile");
+  await assertPlaceholderContrast("dark mobile");
   await page.getByRole("button", { name: /Switch to light theme/ }).click();
   await page.waitForFunction(() => document.documentElement.classList.contains("light"));
   await page.waitForTimeout(200);
   await runAxe("light mobile");
+  await assertPlaceholderContrast("light mobile");
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.waitForTimeout(200);
@@ -479,7 +592,6 @@ try {
   const valid = {
     name: "Ada Lovelace",
     email: "ada@example.com",
-    topic: "project",
     message: "This is a valid contact message.",
     website: "",
     startedAt: old,
@@ -491,6 +603,15 @@ try {
   assert.equal(badBody.ok, false);
   assert.equal(badBody.error, "validation");
   assert.ok(badBody.fields.email);
+
+  const strayTopic = await context.request.post(`${BASE_URL}/api/contact`, {
+    data: { ...valid, topic: "project" },
+    headers: { "x-forwarded-for": `198.51.100.${(Date.now() % 250) + 1}` },
+  });
+  assert.equal(strayTopic.status(), 503, "stray topic is ignored");
+  const strayTopicBody = await strayTopic.json();
+  assert.equal(strayTopicBody.error, "not_configured");
+  assert.equal(strayTopicBody.fields, undefined, "stray topic is not a field error");
 
   const statuses = [];
   const bodies = [];

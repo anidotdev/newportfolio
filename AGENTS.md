@@ -60,8 +60,8 @@ prints a refresh token; see `docs/spotify-setup.md` and `docs/contact-setup.md`.
 - Projects starts with a 48/56px heading row and one `SectionRow` per project. Rows use a 32px icon tile, 12px gap, 18px semibold name, 15px mono date, and 32px shared `Button` icon controls.
 - Dates use thin-space en dashes: `MM.YYYY – Present` or `MM.YYYY – MM.YYYY`; the accessible label says `from … to present`. Never use infinity.
 - The first three projects show initially. `#projects-more` stays mounted but is `inert`/`aria-hidden` when collapsed; the 38px Show more/less button toggles it without changing the open project.
-- Contact has a full-bleed heading row and a two-panel grid from 700px. Panels are 20px padded, at most 540px tall, 16px apart; channel rows are min 60px and flex-fill, and form/success/not-configured share `min-h-[432px]`.
-- Contact headings are 18/24, intros 15/24, inputs 15/20 in 44px controls with 10px radius, and the textarea is 104–200px. Labels are 13/500; topic chips are 32px, labelled Project/Job/Say hi, and stay on one row at 390px.
+- Contact has a full-bleed heading row and a two-panel grid from 700px. Panels are 20px padded, at most 400px tall, 16px apart; channel rows are min 60px and flex-fill, and form/success/not-configured share `min-h-[268px]`.
+- Contact headings are 18/24, intros 15/24; fields use sr-only labels and placeholders, inputs are 15/20 in 44px controls with 10px radius, errors are 12/16 with a 4px gap, and the textarea is 104–200px. There are no visible labels or topic chips; the mailto subject is `contact.mailtoSubject`.
 - Footer starts with a hatch separator, then Navigate/Socials/Elsewhere columns (3 at `md`, 2 from 480px, 1 at mobile), the base row, and the oversized wordmark.
 - Footer wordmark uses `--footer-wordmark`, `clamp(4rem, 18vw, 14rem)`, `line-height: .78`, and a clipped wrapper. Its colour still meets 3:1 for large text in both themes.
 - The footer year is client-side (`useSyncExternalStore`). Back to top focuses `#main-content` and scrolls smoothly unless reduced motion is requested.

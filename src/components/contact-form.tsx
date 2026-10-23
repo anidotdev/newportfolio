@@ -5,7 +5,6 @@ import {
   useRef,
   useState,
   type FormEvent,
-  type KeyboardEvent,
 } from "react";
 import {
   AlertCircle,
@@ -23,7 +22,7 @@ type FieldErrors = Partial<Record<Field, string>>;
 type FormState = "idle" | "sending" | "success" | "error" | "not-configured";
 
 const FIELD_CLASS =
-  "mt-1.5 block w-full min-w-0 rounded-[10px] border border-input bg-background px-3 text-[15px] leading-5 text-foreground outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/15";
+  "block w-full min-w-0 rounded-[10px] border border-input bg-background px-3 text-[15px] leading-5 text-foreground outline-none transition-[border-color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/15";
 
 function fillTemplate(template: string, values: Record<string, string>) {
   return Object.entries(values).reduce(
@@ -74,7 +73,6 @@ export function ContactForm() {
     message: "",
     website: "",
   });
-  const [topic, setTopic] = useState(formCopy.topics[0]?.value ?? "");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formState, setFormState] = useState<FormState>("idle");
   const [formError, setFormError] = useState<string | null>(null);
@@ -84,7 +82,6 @@ export function ContactForm() {
   const nameRef = useRef<HTMLInputElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
   const messageRef = useRef<HTMLTextAreaElement>(null);
-  const topicRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const fieldRefs = {
     name: nameRef,
     email: emailRef,
@@ -94,9 +91,6 @@ export function ContactForm() {
   useEffect(() => {
     startedAt.current = Date.now();
   }, []);
-
-  const topicLabel =
-    formCopy.topics.find((option) => option.value === topic)?.label ?? "";
 
   function updateValue(field: Field | "website", value: string) {
     setValues((current) => ({ ...current, [field]: value }));
@@ -116,44 +110,15 @@ export function ContactForm() {
     setErrors((current) => ({ ...current, [field]: message }));
   }
 
-  function selectTopic(index: number) {
-    const next = formCopy.topics[index];
-    if (!next) return;
-    setTopic(next.value);
-    topicRefs.current[index]?.focus();
-  }
-
-  function handleTopicKeyDown(
-    event: KeyboardEvent<HTMLButtonElement>,
-    index: number,
-  ) {
-    const direction =
-      event.key === "ArrowRight" || event.key === "ArrowDown"
-        ? 1
-        : event.key === "ArrowLeft" || event.key === "ArrowUp"
-          ? -1
-          : 0;
-
-    if (!direction) return;
-    event.preventDefault();
-    const nextIndex =
-      (index + direction + formCopy.topics.length) % formCopy.topics.length;
-    selectTopic(nextIndex);
-  }
-
   function emailAppHref() {
-    const subject = fillTemplate(formCopy.emailSubject, {
-      name: values.name.trim(),
-    });
     const body = fillTemplate(formCopy.emailBody, {
       name: values.name.trim(),
       email: values.email.trim(),
-      topic: topicLabel,
       message: values.message.trim(),
     });
 
     return `mailto:${siteConfig.email}?subject=${encodeURIComponent(
-      subject,
+      contact.mailtoSubject,
     )}&body=${encodeURIComponent(body)}`;
   }
 
@@ -179,7 +144,6 @@ export function ContactForm() {
         body: JSON.stringify({
           name: values.name.trim(),
           email: values.email.trim(),
-          topic,
           message: values.message.trim(),
           website: values.website,
           startedAt: startedAt.current,
@@ -246,7 +210,7 @@ export function ContactForm() {
       <div
         role="status"
         data-testid="contact-success"
-        className="mt-3.5 flex min-h-[432px] flex-col items-start justify-center rounded-xl border border-hairline bg-background/40 p-5"
+        className="mt-4 flex min-h-[268px] flex-col items-start justify-center rounded-xl border border-hairline bg-background/40 p-5"
       >
         <span className="flex size-10 items-center justify-center rounded-full bg-status-available/10 text-status-available">
           <Check aria-hidden="true" className="size-5" />
@@ -275,7 +239,7 @@ export function ContactForm() {
       <div
         role="alert"
         data-testid="contact-not-configured"
-        className="mt-3.5 flex min-h-[432px] flex-col items-start justify-center rounded-xl border border-hairline bg-background/40 p-5"
+        className="mt-4 flex min-h-[268px] flex-col items-start justify-center rounded-xl border border-hairline bg-background/40 p-5"
       >
         <span className="flex size-10 items-center justify-center rounded-full bg-surface-hover text-muted-foreground">
           <AlertCircle aria-hidden="true" className="size-5" />
@@ -297,51 +261,11 @@ export function ContactForm() {
       data-testid="contact-form"
       onSubmit={handleSubmit}
       aria-busy={formState === "sending"}
-      className="relative mt-3.5 flex min-h-[432px] min-w-0 flex-col"
+      className="relative mt-4 flex min-h-[268px] min-w-0 flex-col"
     >
-      <div>
-        <p
-          id="contact-topic-label"
-          className="text-[13px] font-medium leading-5 text-foreground"
-        >
-          {formCopy.topicLabel}
-        </p>
-        <div
-          role="radiogroup"
-          aria-labelledby="contact-topic-label"
-          className="mt-2 flex flex-wrap gap-2 min-[360px]:flex-nowrap"
-        >
-          {formCopy.topics.map((option, index) => (
-            <button
-              key={option.value}
-              ref={(element) => {
-                topicRefs.current[index] = element;
-              }}
-              type="button"
-              role="radio"
-              aria-checked={topic === option.value}
-              tabIndex={topic === option.value ? 0 : -1}
-              onClick={() => setTopic(option.value)}
-              onKeyDown={(event) => handleTopicKeyDown(event, index)}
-              className={cn(
-                "relative inline-flex h-8 items-center whitespace-nowrap rounded-full border px-3 text-[13px] font-medium transition-colors duration-150 before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-[''] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                topic === option.value
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-hairline text-muted-foreground hover:bg-surface-hover hover:text-foreground",
-              )}
-            >
-              {option.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-5 grid gap-3">
+      <div className="grid gap-2.5">
         <div>
-          <label
-            htmlFor="contact-name"
-            className="block text-[13px] font-medium leading-5 text-foreground"
-          >
+          <label htmlFor="contact-name" className="sr-only">
             {formCopy.labels.name}
           </label>
           <input
@@ -363,7 +287,7 @@ export function ContactForm() {
           {errors.name ? (
             <p
               id="contact-name-error"
-              className="mt-1.5 text-xs text-destructive"
+              className="mt-1 text-xs leading-4 text-destructive"
             >
               {errors.name}
             </p>
@@ -371,10 +295,7 @@ export function ContactForm() {
         </div>
 
         <div>
-          <label
-            htmlFor="contact-email"
-            className="block text-[13px] font-medium leading-5 text-foreground"
-          >
+          <label htmlFor="contact-email" className="sr-only">
             {formCopy.labels.email}
           </label>
           <input
@@ -396,7 +317,7 @@ export function ContactForm() {
           {errors.email ? (
             <p
               id="contact-email-error"
-              className="mt-1.5 text-xs text-destructive"
+              className="mt-1 text-xs leading-4 text-destructive"
             >
               {errors.email}
             </p>
@@ -404,19 +325,9 @@ export function ContactForm() {
         </div>
 
         <div>
-          <div className="flex items-baseline justify-between gap-3">
-            <label
-              htmlFor="contact-message"
-              className="block text-[13px] font-medium leading-5 text-foreground"
-            >
-              {formCopy.labels.message}
-            </label>
-            {values.message.length >= 1600 ? (
-              <span className="whitespace-nowrap font-mono text-[11px] tabular-nums text-muted-foreground">
-                {values.message.length}/2000 {formCopy.counterLabel}
-              </span>
-            ) : null}
-          </div>
+          <label htmlFor="contact-message" className="sr-only">
+            {formCopy.labels.message}
+          </label>
           <textarea
             ref={messageRef}
             id="contact-message"
@@ -446,7 +357,7 @@ export function ContactForm() {
           {errors.message ? (
             <p
               id="contact-message-error"
-              className="mt-1.5 text-xs text-destructive"
+              className="mt-1 text-xs leading-4 text-destructive"
             >
               {errors.message}
             </p>
@@ -471,7 +382,7 @@ export function ContactForm() {
         />
       </div>
 
-      <div className="mt-3.5">
+      <div className="mt-3">
         {formState === "error" && formError ? (
           <div
             role="alert"
@@ -511,6 +422,12 @@ export function ContactForm() {
           )}
         </Button>
       </div>
+
+      {values.message.length >= 1600 ? (
+        <span className="pointer-events-none absolute -bottom-4 right-0 whitespace-nowrap font-mono text-[11px] leading-3 tabular-nums text-muted-foreground">
+          {values.message.length}/2000 {formCopy.counterLabel}
+        </span>
+      ) : null}
     </form>
   );
 }
