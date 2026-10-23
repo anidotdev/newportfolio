@@ -14,15 +14,10 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { allNavItems, siteConfig } from "@/config/site";
+import { siteConfig } from "@/config/site";
+import { isNavItemActive, navigateTo } from "@/lib/navigation";
 
-function isActivePath(pathname: string, href: string) {
-  return href === "/"
-    ? pathname === "/"
-    : pathname === href || pathname.startsWith(`${href}/`);
-}
-
-export function MobileMenu() {
+export function MobileMenu({ projectsInView }: { projectsInView: boolean }) {
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
@@ -86,8 +81,17 @@ export function MobileMenu() {
             Navigation
           </p>
           <ul className="flex flex-col">
-            {allNavItems.map((item, index) => {
-              const active = isActivePath(pathname, item.href);
+            {siteConfig.nav.map((item, index) => {
+              const active = isNavItemActive(
+                item,
+                pathname,
+                projectsInView,
+              );
+              const className = `flex min-h-11 items-center justify-between rounded-md px-3 text-base font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:bg-chip ${
+                active
+                  ? "bg-chip text-foreground"
+                  : "text-muted-foreground hover:bg-chip hover:text-foreground"
+              }`;
 
               return (
                 <motion.li
@@ -108,25 +112,41 @@ export function MobileMenu() {
                     delay: reduceMotion ? 0 : index * 0.04,
                   }}
                 >
-                  <Link
-                    href={item.href}
-                    prefetch={false}
-                    onClick={() => setOpen(false)}
-                    aria-current={active ? "page" : undefined}
-                    className={`flex min-h-11 items-center justify-between rounded-md px-3 text-base font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:bg-chip ${
-                      active
-                        ? "bg-chip text-foreground"
-                        : "text-muted-foreground hover:bg-chip hover:text-foreground"
-                    }`}
-                  >
-                    {item.label}
-                    {active ? (
-                      <span
-                        aria-hidden="true"
-                        className="size-1 rounded-full bg-foreground"
-                      />
-                    ) : null}
-                  </Link>
+                  {item.external ? (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setOpen(false)}
+                      className={className}
+                    >
+                      {item.label}
+                      <span className="sr-only">
+                        {" "}
+                        ({siteConfig.labels.opensInNewTab})
+                      </span>
+                    </a>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      prefetch={false}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        setOpen(false);
+                        navigateTo(item.href);
+                      }}
+                      aria-current={active ? "page" : undefined}
+                      className={className}
+                    >
+                      {item.label}
+                      {active ? (
+                        <span
+                          aria-hidden="true"
+                          className="size-1 rounded-full bg-foreground"
+                        />
+                      ) : null}
+                    </Link>
+                  )}
                 </motion.li>
               );
             })}

@@ -1,28 +1,17 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Search, Star } from "lucide-react";
+import { Search, Star } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 
 import { MobileMenu } from "@/components/mobile-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { siteConfig, type NavItem } from "@/config/site";
 import { useIsMac } from "@/lib/client";
+import { isNavItemActive, navigateTo } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
-
-function isActivePath(pathname: string, href: string) {
-  return href === "/"
-    ? pathname === "/"
-    : pathname === href || pathname.startsWith(`${href}/`);
-}
 
 function onSearchOpen() {
   // TODO: open the command palette / search dialog.
@@ -46,6 +35,7 @@ function ActiveDot() {
 
   return (
     <motion.span
+      data-testid="active-nav-dot"
       aria-hidden="true"
       layoutId="primary-nav-dot"
       className="absolute -bottom-1 left-1/2 -ml-0.5 size-1 rounded-full bg-foreground"
@@ -58,20 +48,47 @@ function ActiveDot() {
   );
 }
 
-function NavLink({ item, pathname }: { item: NavItem; pathname: string }) {
-  const active = isActivePath(pathname, item.href);
+function NavLink({
+  item,
+  pathname,
+  projectsInView,
+}: {
+  item: NavItem;
+  pathname: string;
+  projectsInView: boolean;
+}) {
+  const active = isNavItemActive(item, pathname, projectsInView);
+  const className = cn(
+    "relative flex h-8 items-center rounded-sm text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:text-foreground",
+    active
+      ? "text-foreground"
+      : "text-muted-foreground hover:text-foreground",
+  );
+
+  if (item.external) {
+    return (
+      <a
+        href={item.href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+      >
+        {item.label}
+        <span className="sr-only"> ({siteConfig.labels.opensInNewTab})</span>
+      </a>
+    );
+  }
 
   return (
     <Link
       href={item.href}
       prefetch={false}
       aria-current={active ? "page" : undefined}
-      className={cn(
-        "relative flex h-8 items-center rounded-sm text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:text-foreground",
-        active
-          ? "text-foreground"
-          : "text-muted-foreground hover:text-foreground",
-      )}
+      onClick={(event) => {
+        event.preventDefault();
+        navigateTo(item.href);
+      }}
+      className={className}
     >
       {item.label}
       {active ? <ActiveDot /> : null}
@@ -155,71 +172,20 @@ function GitHubLink() {
   );
 }
 
-function DesktopNav() {
+function DesktopNav({ projectsInView }: { projectsInView: boolean }) {
   const pathname = usePathname();
-  const moreActive = siteConfig.more.some((item) =>
-    isActivePath(pathname, item.href),
-  );
 
   return (
     <div className="hidden items-center gap-3 md:flex">
       <nav aria-label="Primary" className="flex items-center gap-5">
         {siteConfig.nav.map((item) => (
-          <NavLink key={item.href} item={item} pathname={pathname} />
+          <NavLink
+            key={item.href}
+            item={item}
+            pathname={pathname}
+            projectsInView={projectsInView}
+          />
         ))}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <button
-              type="button"
-              className={cn(
-                "group relative flex h-8 cursor-pointer items-center gap-1 rounded-sm text-sm font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background active:text-foreground",
-                moreActive
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              More
-              <ChevronDown
-                aria-hidden="true"
-                className="size-3.5 transition-transform duration-150 group-data-[state=open]:rotate-180"
-                strokeWidth={1.75}
-              />
-              {moreActive ? <ActiveDot /> : null}
-            </button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            sideOffset={10}
-            className="w-auto min-w-40 overscroll-contain rounded-lg border border-hairline bg-popover p-1 text-popover-foreground shadow-lg ring-0"
-          >
-            {siteConfig.more.map((item) => {
-              const active = isActivePath(pathname, item.href);
-
-              return (
-                <DropdownMenuItem
-                  key={item.href}
-                  asChild
-                  className="rounded-md px-2.5 py-2 text-sm font-medium text-muted-foreground focus:bg-chip focus:text-foreground data-[highlighted]:bg-chip data-[highlighted]:text-foreground"
-                >
-                  <Link
-                    href={item.href}
-                    prefetch={false}
-                    aria-current={active ? "page" : undefined}
-                    className="flex w-full items-center justify-between gap-6"
-                  >
-                    {item.label}
-                    {active ? (
-                      <span
-                        aria-hidden="true"
-                        className="size-1 rounded-full bg-foreground"
-                      />
-                    ) : null}
-                  </Link>
-                </DropdownMenuItem>
-              );
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
       </nav>
 
       <span aria-hidden="true" className="h-5 w-px bg-hairline" />
@@ -233,6 +199,21 @@ function DesktopNav() {
 }
 
 export function SiteHeader() {
+  const [projectsInView, setProjectsInView] = useState(false);
+
+  useEffect(() => {
+    const projects = document.getElementById("projects");
+    if (!projects) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setProjectsInView(entry.isIntersecting),
+      { threshold: 0 },
+    );
+
+    observer.observe(projects);
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 h-16 w-full border-b border-hairline bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-full w-full max-w-[var(--container-max)] items-center justify-between border-x border-hairline px-5">
@@ -245,10 +226,10 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-1 md:hidden">
           <ThemeToggle />
-          <MobileMenu />
+          <MobileMenu projectsInView={projectsInView} />
         </div>
 
-        <DesktopNav />
+        <DesktopNav projectsInView={projectsInView} />
       </div>
     </header>
   );

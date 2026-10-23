@@ -1,6 +1,10 @@
 export type NavItem = {
   label: string;
   href: string;
+  /** Opens in a new tab when true. */
+  external?: boolean;
+  /** Keyboard chord shown in the command palette, for example `G H`. */
+  shortcut?: string;
 };
 
 export type SocialIcon = "x" | "github" | "linkedin" | "discord" | "youtube";
@@ -117,10 +121,15 @@ export type SpotifyConfig = {
 
 type SiteConfig = {
   name: string;
+  ownerName: string;
   description: string;
   homeHref: string;
+  contactHref: string;
+  labels: {
+    contact: string;
+    opensInNewTab: string;
+  };
   nav: NavItem[];
-  more: NavItem[];
   github: {
     label: string;
     href: string;
@@ -134,17 +143,25 @@ type SiteConfig = {
 
 export const siteConfig: SiteConfig = {
   name: "Ani",
+  ownerName: "Animesh Gautam",
   description: "Software engineer and builder.",
   homeHref: "/",
+  contactHref: "/#contact",
+  labels: {
+    contact: "Contact",
+    opensInNewTab: "opens in new tab",
+  },
   nav: [
-    { label: "Home", href: "/" },
-    { label: "Projects", href: "/projects" },
-    { label: "Experience", href: "/experience" },
-  ],
-  more: [
-    { label: "Blog", href: "/blog" },
-    { label: "Skills", href: "/skills" },
-    { label: "Contact", href: "/contact" },
+    { label: "Home", href: "/", shortcut: "G H" },
+    { label: "Projects", href: "/#projects", shortcut: "G P" },
+    {
+      label: "Blog",
+      // TODO: replace with the final Medium URL.
+      // Placeholder: https://medium.com/@your-handle
+      href: "https://medium.com/@anidotdev",
+      external: true,
+      shortcut: "G B",
+    },
   ],
   github: {
     label: "GitHub",
@@ -319,7 +336,3 @@ export const siteConfig: SiteConfig = {
   },
 };
 
-export const allNavItems: NavItem[] = [
-  ...siteConfig.nav,
-  ...siteConfig.more,
-];

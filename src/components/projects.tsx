@@ -266,7 +266,7 @@ export function Projects() {
       id="projects"
       data-testid="projects-section"
       aria-labelledby="projects-heading"
-      className="hero-grid relative w-full"
+      className="hero-grid relative w-full scroll-mt-20"
     >
       <div
         data-testid="projects-shell"

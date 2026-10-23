@@ -81,20 +81,27 @@ try {
         1,
         "exactly one visible primary nav with the mobile menu open",
       );
-      for (const label of [
-        "Home",
-        "Projects",
-        "Experience",
-        "Blog",
-        "Skills",
-        "Contact",
-      ]) {
+      for (const label of ["Home", "Projects", "Blog"]) {
         assert.equal(
-          await page.getByRole("link", { name: label, exact: true }).count(),
+          await page
+            .getByRole("link", {
+              name: new RegExp(`^${label}`),
+            })
+            .count(),
           1,
           `mobile menu link ${label}`,
         );
       }
+      assert.equal(
+        await page.getByText("Experience", { exact: true }).count(),
+        0,
+        "Experience should be removed",
+      );
+      assert.equal(
+        await page.getByText("More", { exact: true }).count(),
+        0,
+        "More should be removed",
+      );
       assert.equal(
         await page.evaluate(() => getComputedStyle(document.body).overflow),
         "hidden",
@@ -120,6 +127,59 @@ try {
   }
 
   await page.setViewportSize({ width: 1440, height: 900 });
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(150);
+
+  const primaryNav = page.locator('nav[aria-label="Primary"]:visible');
+  assert.deepEqual(
+    await primaryNav.getByRole("link").allTextContents(),
+    ["Home", "Projects", "Blog (opens in new tab)"],
+    "desktop nav items",
+  );
+  const blog = primaryNav.getByRole("link", { name: /^Blog/ });
+  assert.equal(
+    await blog.getAttribute("href"),
+    "https://medium.com/@anidotdev",
+    "Blog should link to Medium",
+  );
+  assert.equal(await blog.getAttribute("target"), "_blank");
+  assert.match((await blog.getAttribute("rel")) ?? "", /\bnoopener\b/);
+  assert.equal(
+    await page.getByRole("button", { name: "More", exact: true }).count(),
+    0,
+    "More dropdown should be removed",
+  );
+
+  let home = primaryNav.getByRole("link", { name: "Home" });
+  let projectsNav = primaryNav.getByRole("link", { name: "Projects" });
+  assert.equal(await home.getAttribute("aria-current"), "page");
+  assert.equal(
+    await home.getByTestId("active-nav-dot").count(),
+    1,
+    "Home dot at the top",
+  );
+
+  await page.locator("#projects").scrollIntoViewIfNeeded();
+  await page.waitForFunction(() =>
+    document
+      .querySelector('nav[aria-label="Primary"] a[href="/#projects"]')
+      ?.getAttribute("aria-current") === "page",
+  );
+  projectsNav = primaryNav.getByRole("link", { name: "Projects" });
+  assert.equal(await projectsNav.getAttribute("aria-current"), "page");
+  assert.equal(
+    await projectsNav.getByTestId("active-nav-dot").count(),
+    1,
+    "Projects dot while in view",
+  );
+  assert.equal(
+    await primaryNav.getByRole("link", { name: /^Blog/ }).getAttribute(
+      "aria-current",
+    ),
+    null,
+    "Blog is never active",
+  );
+
   await page.evaluate(() => window.scrollTo(0, 1200));
   await page.waitForTimeout(100);
   assert.equal(
@@ -137,10 +197,6 @@ try {
     2,
     "search should show two keyboard chips",
   );
-
-  await page.getByRole("button", { name: "More", exact: true }).click();
-  await page.getByRole("menu").waitFor();
-  await page.keyboard.press("Escape");
 
   await page.setViewportSize({ width: 390, height: 900 });
   const wasDark = await page.evaluate(() =>
