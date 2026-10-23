@@ -35,6 +35,7 @@
   --color-brand-aws: var(--brand-aws);
   --color-brand-google-cloud: var(--brand-google-cloud);
   --color-spotify: var(--spotify-playing);
+  --color-status-available: var(--status-available);
 
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
@@ -84,6 +85,7 @@
   --brand-aws: var(--foreground);
   --brand-google-cloud: #1a73e8;
   --spotify-playing: #1db954;
+  --status-available: #15803d;
 
   color-scheme: light;
 }
@@ -121,6 +123,7 @@
   --brand-aws: #ff9900;
   --brand-google-cloud: #4285f4;
   --spotify-playing: #1db954;
+  --status-available: #4ade80;
 
   color-scheme: dark;
 }
@@ -175,6 +178,26 @@
     .command-shortcut {
       display: flex;
     }
+  }
+}
+
+.status-dot {
+  animation: status-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes status-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-dot {
+    animation: none;
   }
 }
 

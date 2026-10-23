@@ -105,6 +105,76 @@ export type ProjectsConfig = {
   projects: Project[];
 };
 
+export type ContactChannel = {
+  id: "email" | "call" | "x";
+  icon: "mail" | "calendar" | "x";
+  label: string;
+  hint: string;
+  href: string;
+  external: boolean;
+};
+
+export type ContactTopic = {
+  value: string;
+  label: string;
+};
+
+export type ContactConfig = {
+  heading: string;
+  intro: string;
+  getInTouch: string;
+  sendMessage: string;
+  channels: ContactChannel[];
+  copyEmail: {
+    button: string;
+    copied: string;
+    announcement: string;
+    failed: string;
+  };
+  availability: {
+    status: "open" | "closed";
+    text: string;
+    replyTime: string;
+  };
+  form: {
+    topicLabel: string;
+    topics: ContactTopic[];
+    labels: {
+      name: string;
+      email: string;
+      message: string;
+    };
+    placeholders: {
+      name: string;
+      email: string;
+      message: string;
+    };
+    errors: {
+      name: string;
+      nameLong: string;
+      email: string;
+      emailLong: string;
+      emailFormat: string;
+      message: string;
+      messageShort: string;
+      messageLong: string;
+      topic: string;
+    };
+    counterLabel: string;
+    submit: string;
+    sending: string;
+    successTitle: string;
+    successBody: string;
+    sendAnother: string;
+    error: string;
+    rateLimited: string;
+    notConfigured: string;
+    openEmailApp: string;
+    emailSubject: string;
+    emailBody: string;
+  };
+};
+
 export type SpotifyTrack = {
   title: string;
   artists: string[];
@@ -142,8 +212,12 @@ type SiteConfig = {
   hero: HeroConfig;
   about: AboutConfig;
   projects: ProjectsConfig;
+  contact: ContactConfig;
   spotify: SpotifyConfig;
 };
+
+// TODO: replace with your real contact email.
+const CONTACT_EMAIL = "hello@example.com";
 
 export const siteConfig: SiteConfig = {
   name: "Ani",
@@ -151,8 +225,7 @@ export const siteConfig: SiteConfig = {
   description: "Software engineer and builder.",
   homeHref: "/",
   contactHref: "/#contact",
-  // TODO: replace with your real contact email.
-  email: "hello@example.com",
+  email: CONTACT_EMAIL,
   labels: {
     contact: "Contact",
     opensInNewTab: "opens in new tab",
@@ -328,6 +401,94 @@ export const siteConfig: SiteConfig = {
         tags: ["Tag one", "Tag two"],
       },
     ],
+  },
+  contact: {
+    heading: "Let's work together",
+    // TODO: replace with your own introduction.
+    intro: "Tell me what you're working on, and I'll get back to you.",
+    getInTouch: "Get in touch",
+    sendMessage: "Send a message",
+    channels: [
+      {
+        id: "email",
+        icon: "mail",
+        label: "Email",
+        hint: CONTACT_EMAIL,
+        href: `mailto:${CONTACT_EMAIL}`,
+        external: false,
+      },
+      {
+        id: "call",
+        icon: "calendar",
+        label: "Book a call",
+        // TODO: replace with your real booking link and call length.
+        hint: "30 minute intro call",
+        href: "https://cal.com/your-handle",
+        external: true,
+      },
+      {
+        id: "x",
+        icon: "x",
+        label: "DM on X",
+        hint: "@anidotdev",
+        href: "https://x.com/anidotdev",
+        external: true,
+      },
+    ],
+    copyEmail: {
+      button: "Copy email",
+      copied: "Copied",
+      announcement: "Email copied",
+      failed: "Couldn't copy. Select the address instead.",
+    },
+    availability: {
+      // TODO: update when your availability changes.
+      status: "open",
+      text: "Open to internships and freelance work",
+      replyTime: "Usually replies in 1–2 days",
+    },
+    form: {
+      topicLabel: "What is this about?",
+      topics: [
+        { value: "project", label: "Project" },
+        { value: "internship", label: "Internship or job" },
+        { value: "hello", label: "Just saying hi" },
+      ],
+      labels: {
+        name: "Name",
+        email: "Email",
+        message: "Message",
+      },
+      placeholders: {
+        name: "Your name",
+        email: "you@example.com",
+        message: "Tell me what you have in mind",
+      },
+      errors: {
+        name: "Enter your name.",
+        nameLong: "Use 100 characters or fewer.",
+        email: "Enter your email address.",
+        emailLong: "Use 200 characters or fewer.",
+        emailFormat: "Enter an email address like name@example.com.",
+        message: "Write a message.",
+        messageShort: "Use at least 10 characters.",
+        messageLong: "Use 2,000 characters or fewer.",
+        topic: "Choose a valid topic.",
+      },
+      counterLabel: "characters used",
+      submit: "Send message",
+      sending: "Sending…",
+      successTitle: "Message sent",
+      successBody: "Thanks, {name}. I'll reply to {email} soon.",
+      sendAnother: "Send another",
+      error: "Couldn't send your message. Try again, or email me directly.",
+      rateLimited: "Too many messages. Try again later, or email me directly.",
+      notConfigured:
+        "Messages can't be sent from this site yet. You can send it from your own email app instead.",
+      openEmailApp: "Open email app",
+      emailSubject: "Portfolio message from {name}",
+      emailBody: "Name: {name}\nEmail: {email}\nTopic: {topic}\n\n{message}",
+    },
   },
   spotify: {
     fallback: {

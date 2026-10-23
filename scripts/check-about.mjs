@@ -45,6 +45,18 @@ await page.route("**/api/spotify", async (route) => {
   }
 });
 
+await page.route("**/api/contact", async (route) => {
+  try {
+    await route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: false, error: "not_configured" }),
+    });
+  } catch {
+    // The page can navigate away while a request is still pending.
+  }
+});
+
 async function box(locator) {
   const result = await locator.boundingBox();
   assert.ok(result, "element should have a bounding box");

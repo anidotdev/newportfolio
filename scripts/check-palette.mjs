@@ -36,6 +36,18 @@ await page.route("**/api/spotify", async (route) => {
   }
 });
 
+await page.route("**/api/contact", async (route) => {
+  try {
+    await route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: false, error: "not_configured" }),
+    });
+  } catch {
+    // The page can navigate away while a request is still pending.
+  }
+});
+
 const dialog = page.getByRole("dialog", { name: "Command menu" });
 const input = page.getByPlaceholder("Type a command or search…");
 
@@ -85,6 +97,7 @@ try {
   await page.evaluate(() => document.fonts.ready);
 
   await openWithShortcut();
+  await page.waitForTimeout(250);
   assert.equal(
     await page.locator('input[placeholder="Type a command or search…"]').count(),
     1,
@@ -214,6 +227,7 @@ try {
   for (const width of [1440, 1024, 768, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await openWithShortcut();
+    await page.waitForTimeout(250);
     await assertNoOverflow(width);
 
     const box = await dialog.boundingBox();

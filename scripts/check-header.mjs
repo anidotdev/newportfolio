@@ -27,6 +27,18 @@ await page.route("**/api/spotify", async (route) => {
   }
 });
 
+await page.route("**/api/contact", async (route) => {
+  try {
+    await route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: false, error: "not_configured" }),
+    });
+  } catch {
+    // The page can navigate away while a request is still pending.
+  }
+});
+
 try {
   await page.goto("http://localhost:3000", { waitUntil: "networkidle" });
   await page.evaluate(() => document.fonts.ready);
