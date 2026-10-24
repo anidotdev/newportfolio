@@ -183,7 +183,10 @@ export type FooterConfig = {
   elsewhere: FooterLink[];
   builtWith: string;
   backToTop: string;
-  wordmark: string;
+  banner: {
+    light: string;
+    dark: string;
+  };
 };
 
 export type SpotifyTrack = {
@@ -509,7 +512,12 @@ export const siteConfig: SiteConfig = {
     ],
     builtWith: "Built with Next.js and Tailwind CSS",
     backToTop: "Back to top",
-    wordmark: "Animesh",
+    banner: {
+      light:
+        "https://ascii.rest/banner/Animesh.svg?art=command-code&place=right",
+      dark:
+        "https://ascii.rest/banner/Animesh.dark.svg?art=command-code&place=right",
+    },
   },
   spotify: {
     fallback: {

@@ -172,10 +172,38 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="col-[full] w-full overflow-hidden px-5 pb-3 pt-8">
-        <p aria-hidden="true" className="footer-wordmark select-none whitespace-nowrap">
-          {footer.wordmark}
-        </p>
+      <div
+        data-testid="footer-banner"
+        aria-hidden="true"
+        className="col-[full] w-full border-t border-hairline"
+      >
+        <div
+          data-testid="footer-banner-inner"
+          className="mx-auto w-full max-w-[var(--container-max)] px-5 pt-8 pb-[calc(2.5rem_+_env(safe-area-inset-bottom))] md:pt-10 md:pb-[calc(3rem_+_env(safe-area-inset-bottom))]"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={footer.banner.light}
+            alt=""
+            width={822}
+            height={120}
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            className="block h-auto w-full dark:hidden"
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={footer.banner.dark}
+            alt=""
+            width={822}
+            height={120}
+            loading="lazy"
+            decoding="async"
+            referrerPolicy="no-referrer"
+            className="hidden h-auto w-full dark:block"
+          />
+        </div>
       </div>
     </footer>
   );

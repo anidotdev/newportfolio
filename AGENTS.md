@@ -33,7 +33,7 @@ prints a refresh token; see `docs/spotify-setup.md` and `docs/contact-setup.md`.
 | Path | Responsibility |
 | --- | --- |
 | `src/app/{layout,page}.tsx` | Fonts/providers/metadata; hero, About, Projects, Contact, Footer, `#main-content`, `#page-end`, blur |
-| `src/app/globals.css` | Tokens, `.hero-grid`, smooth scroll, `.footer-wordmark`, reduced motion |
+| `src/app/globals.css` | Tokens, `.hero-grid`, smooth scroll, reduced motion |
 | `src/components/{site-header,mobile-menu}.tsx` | Sticky nav, active dot, palette trigger, mobile Sheet |
 | `src/components/command-palette.tsx` | Ctrl/⌘+K palette, groups, G chords, focus restore |
 | `src/components/ui/{dialog,command}.tsx` | Local Radix dialog and cmdk primitives |
@@ -44,7 +44,7 @@ prints a refresh token; see `docs/spotify-setup.md` and `docs/contact-setup.md`.
 | `src/components/about.tsx` | About rows, bio, tech stack |
 | `src/components/projects.tsx`, `src/lib/projects.mjs` | Project rows/details, dates, show-more split |
 | `src/components/{contact,contact-form,copy-email-button}.tsx` | Contact shell, channels, copy, form states |
-| `src/components/footer.tsx` | Link columns, client year, back to top, wordmark |
+| `src/components/footer.tsx` | Link columns, client year, back to top, ascii banner |
 | `src/components/section.tsx` | Full-bleed `SectionRow` and hatch `SectionSeparator` |
 | `src/config/site.ts` | All copy, nav, contact, footer, project, Spotify fallback |
 | `src/lib/spotify.ts`, `src/app/api/spotify/route.ts` | Server Spotify data and API |
@@ -62,10 +62,11 @@ prints a refresh token; see `docs/spotify-setup.md` and `docs/contact-setup.md`.
 - The first three projects show initially. `#projects-more` stays mounted but is `inert`/`aria-hidden` when collapsed; the 38px Show more/less button toggles it without changing the open project.
 - Contact has a full-bleed heading row and a two-panel grid from 700px. Panels are 20px padded, at most 400px tall, 16px apart; channel rows are min 60px and flex-fill, and form/success/not-configured share `min-h-[268px]`.
 - Contact headings are 18/24, intros 15/24; fields use sr-only labels and placeholders, inputs are 15/20 in 44px controls with 10px radius, errors are 12/16 with a 4px gap, and the textarea is 104–200px. There are no visible labels or topic chips; the mailto subject is `contact.mailtoSubject`.
-- Footer starts with a hatch separator, then Navigate/Socials/Elsewhere columns (3 at `md`, 2 from 480px, 1 at mobile), the base row, and the oversized wordmark.
-- Footer wordmark uses `--footer-wordmark`, `clamp(4rem, 18vw, 14rem)`, `line-height: .78`, and a clipped wrapper. Its colour still meets 3:1 for large text in both themes.
+- Footer starts with a hatch separator, then Navigate/Socials/Elsewhere columns (3 at `md`, 2 from 480px, 1 at mobile), the base row, then a banner row: `px-5 pt-8 pb-10` (`md:pt-10 md:pb-12`) plus `env(safe-area-inset-bottom)`; the 822/120 image is 100% wide.
+- `footer.banner.light` is `https://ascii.rest/banner/Animesh.svg?art=command-code&place=right`; `.dark` is `https://ascii.rest/banner/Animesh.dark.svg?art=command-code&place=right`. Two native-colour `<img>`s swap via `dark:hidden`/`hidden dark:block`; `alt=""`, wrapper `aria-hidden`, lazy. Hosted dependency on ascii.rest; tests stub it.
+- The old `--footer-wordmark` token, `.footer-wordmark` sizing/mask, and `footer.wordmark` config are gone; the banner is the last footer element before `#page-end`.
 - The footer year is client-side (`useSyncExternalStore`). Back to top focuses `#main-content` and scrolls smoothly unless reduced motion is requested.
-- Tokens: `--background`, `--foreground`, `--muted-foreground`, `--hairline`, `--chip`, `--ring`, `--popover`, `--container-max`, `--surface-*`, `--hatch`, `--blur-veil`, `--spotify-playing`, `--status-available`, `--footer-wordmark`, `--font-hand`, brand tokens. Use semantic classes.
+- Tokens: `--background`, `--foreground`, `--muted-foreground`, `--hairline`, `--chip`, `--ring`, `--popover`, `--container-max`, `--surface-*`, `--hatch`, `--blur-veil`, `--spotify-playing`, `--status-available`, `--font-hand`, brand tokens. Use semantic classes.
 - Theme is class-based, dark default, system disabled; AA contrast is verified. Projects/Contact use `scroll-mt-20` (header 64px + 16px); there is no global scroll padding, which would double the offset.
 
 ## Behaviour and content
@@ -83,8 +84,8 @@ prints a refresh token; see `docs/spotify-setup.md` and `docs/contact-setup.md`.
 
 ## Verification
 
-Last verified 2026-10-23: `pnpm typecheck`, `pnpm lint`, `pnpm build`, and all seven checks pass.
+Last verified 2026-10-24: `pnpm typecheck`, `pnpm lint`, `pnpm build`, and all seven checks pass.
 Coverage: header/nav; palette; hero/Spotify/banner; About; projects/show-more; contact form/API;
-footer columns/year/back-to-top. Checks run at 1440/1024/768/390, with contact/footer also at
+footer columns/year/back-to-top/banner. Checks run at 1440/1024/768/390, with contact/footer also at
 320; axe runs in light/dark, and reduced motion/overflow/stubs are covered. `check:hero` reads
 the social count from config rather than hardcoding it.

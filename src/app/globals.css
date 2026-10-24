@@ -86,7 +86,6 @@
   --brand-google-cloud: #1a73e8;
   --spotify-playing: #1db954;
   --status-available: #15803d;
-  --footer-wordmark: #8b8b93;
 
   color-scheme: light;
 }
@@ -125,7 +124,6 @@
   --brand-google-cloud: #4285f4;
   --spotify-playing: #1db954;
   --status-available: #4ade80;
-  --footer-wordmark: #6f6f78;
 
   color-scheme: dark;
 }
@@ -180,15 +178,6 @@
       display: flex;
     }
   }
-}
-
-.footer-wordmark {
-  font-family: var(--font-instrument-serif);
-  font-size: clamp(4rem, 18vw, 14rem);
-  line-height: 0.78;
-  letter-spacing: -0.06em;
-  text-align: center;
-  color: var(--footer-wordmark);
 }
 
 .status-dot {

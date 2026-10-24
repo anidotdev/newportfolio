@@ -11,6 +11,10 @@ const SPOTIFY = {
   albumArt: null,
   url: "https://open.spotify.com/track/last",
 };
+const BANNER_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 822 120" width="822" height="120"><rect width="822" height="120" fill="none"/></svg>';
+const BANNER_RATIO = 822 / 120;
+const bannerRequests = [];
 
 const browser = await chromium.launch();
 const context = await browser.newContext({
@@ -25,7 +29,19 @@ page.on("console", (message) => {
 });
 page.on("pageerror", (error) => consoleErrors.push(error.message));
 
-async function stub(pageToStub) {
+async function stub(pageToStub, requestLog = bannerRequests) {
+  await pageToStub.route("https://ascii.rest/**", async (route) => {
+    requestLog.push(route.request().url());
+    try {
+      await route.fulfill({
+        status: 200,
+        contentType: "image/svg+xml",
+        body: BANNER_SVG,
+      });
+    } catch {
+      // The page can navigate away while a request is still pending.
+    }
+  });
   await pageToStub.route("**/api/spotify", async (route) => {
     try {
       await route.fulfill({
@@ -61,6 +77,128 @@ async function assertNoOverflow(width) {
     metrics.scrollWidth,
     metrics.clientWidth,
     `horizontal overflow at ${width}`,
+  );
+}
+
+function bannerRequestKinds() {
+  return bannerRequests.map((url) =>
+    url.includes(".dark.svg") ? "dark" : "light",
+  );
+}
+
+async function setTheme(theme) {
+  const current = await page.evaluate(() =>
+    document.documentElement.classList.contains("dark") ? "dark" : "light",
+  );
+  if (current === theme) return;
+
+  await page
+    .getByRole("button", {
+      name: theme === "dark" ? /Switch to dark theme/ : /Switch to light theme/,
+    })
+    .click();
+  await page.waitForFunction(
+    (next) => document.documentElement.classList.contains(next),
+    theme,
+  );
+  await page.waitForTimeout(250);
+}
+
+async function assertBanner(footer, theme, width) {
+  const label = `${theme} banner at ${width}`;
+  const banner = footer.getByTestId("footer-banner");
+  const inner = banner.getByTestId("footer-banner-inner");
+  assert.equal(await banner.getAttribute("aria-hidden"), "true", `${label} is decorative`);
+  assert.equal(
+    await banner.evaluate((element) => getComputedStyle(element).borderTopWidth),
+    "1px",
+    `${label} hairline`,
+  );
+  assert.equal(
+    await banner.evaluate(
+      (element) => element === element.parentElement?.lastElementChild,
+    ),
+    true,
+    `${label} is last`,
+  );
+
+  const light = banner.locator('img[src*="Animesh.svg"]');
+  const dark = banner.locator('img[src*="Animesh.dark.svg"]');
+  assert.equal(await light.count(), 1, `${label} light image`);
+  assert.equal(await dark.count(), 1, `${label} dark image`);
+
+  const lightSrc = (await light.getAttribute("src")) ?? "";
+  const darkSrc = (await dark.getAttribute("src")) ?? "";
+  assert.match(darkSrc, /\.dark\.svg/, `${label} dark source`);
+  assert.equal(lightSrc.includes(".dark.svg"), false, `${label} light source`);
+  assert.match(
+    lightSrc,
+    /\/banner\/Animesh\.svg\?art=command-code&place=right$/,
+    `${label} light URL`,
+  );
+  assert.match(
+    darkSrc,
+    /\/banner\/Animesh\.dark\.svg\?art=command-code&place=right$/,
+    `${label} dark URL`,
+  );
+
+  assert.equal(await light.isVisible(), theme === "light", `${label} light visibility`);
+  assert.equal(await dark.isVisible(), theme === "dark", `${label} dark visibility`);
+
+  for (const image of [light, dark]) {
+    assert.equal(await image.getAttribute("alt"), "", `${label} empty alt`);
+    assert.equal(await image.getAttribute("loading"), "lazy", `${label} lazy`);
+    assert.equal(await image.getAttribute("decoding"), "async", `${label} async`);
+    assert.equal(
+      await image.getAttribute("referrerpolicy"),
+      "no-referrer",
+      `${label} referrer`,
+    );
+    assert.equal(await image.getAttribute("width"), "822", `${label} width attr`);
+    assert.equal(await image.getAttribute("height"), "120", `${label} height attr`);
+  }
+
+  const visible = theme === "dark" ? dark : light;
+  await visible.evaluate((image) => image.decode().catch(() => {}));
+  const box = await visible.boundingBox();
+  assert.ok(box && box.height > 0, `${label} rendered`);
+  const ratio = box.width / box.height;
+  assert.ok(
+    Math.abs(ratio - BANNER_RATIO) / BANNER_RATIO <= 0.01,
+    `${label} ratio ${ratio.toFixed(3)}`,
+  );
+
+  const metrics = await inner.evaluate((element) => {
+    const style = getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return {
+      paddingTop: Number.parseFloat(style.paddingTop),
+      paddingBottom: Number.parseFloat(style.paddingBottom),
+      paddingLeft: Number.parseFloat(style.paddingLeft),
+      paddingRight: Number.parseFloat(style.paddingRight),
+      contentLeft: rect.left + Number.parseFloat(style.paddingLeft),
+      contentRight: rect.right - Number.parseFloat(style.paddingRight),
+      contentWidth:
+        element.clientWidth -
+        Number.parseFloat(style.paddingLeft) -
+        Number.parseFloat(style.paddingRight),
+    };
+  });
+  assert.ok(
+    box.width <= metrics.contentWidth + 0.5,
+    `${label} fits the container`,
+  );
+  assert.ok(
+    Math.abs(box.x - metrics.contentLeft - (metrics.contentRight - (box.x + box.width))) <= 2,
+    `${label} centered`,
+  );
+  assert.equal(metrics.paddingLeft, 20, `${label} left padding`);
+  assert.equal(metrics.paddingRight, 20, `${label} right padding`);
+  assert.equal(metrics.paddingTop, width >= 768 ? 40 : 32, `${label} top padding`);
+  assert.equal(
+    metrics.paddingBottom,
+    width >= 768 ? 48 : 40,
+    `${label} bottom padding`,
   );
 }
 
@@ -180,28 +318,25 @@ try {
     1,
   );
 
-  const wordmark = footer.locator(".footer-wordmark");
-  assert.equal(await wordmark.innerText(), "Animesh");
-  assert.equal(await wordmark.getAttribute("aria-hidden"), "true");
+  assert.equal(
+    await footer.locator(".footer-wordmark").count(),
+    0,
+    "wordmark row is gone",
+  );
+  assert.equal(
+    await footer.getByText("Animesh", { exact: true }).count(),
+    0,
+    "standalone wordmark text is gone",
+  );
+  await assertBanner(footer, "dark", 1440);
+  assert.equal(
+    bannerRequestKinds().filter((kind) => kind === "light").length,
+    0,
+    "hidden light banner is not requested",
+  );
   assert.ok(
-    Number.parseFloat(await wordmark.evaluate((element) => getComputedStyle(element).fontSize)) >=
-      64,
-    "wordmark is oversized",
-  );
-  assert.equal(
-    await wordmark.evaluate((element) => getComputedStyle(element).overflow),
-    "visible",
-    "wordmark text itself is not clipped",
-  );
-  assert.equal(
-    await wordmark.evaluate((element) => element.parentElement.style.overflow),
-    "",
-    "wordmark wrapper uses the overflow-hidden utility",
-  );
-  assert.equal(
-    await wordmark.evaluate((element) => getComputedStyle(element.parentElement).overflow),
-    "hidden",
-    "wordmark wrapper clips overflow",
+    bannerRequestKinds().includes("dark"),
+    "visible dark banner is requested",
   );
 
   const footerBox = await footer.boundingBox();
@@ -217,6 +352,16 @@ try {
   const sentinel = await page.locator("#page-end").boundingBox();
   assert.ok(sentinel);
   assert.ok(sentinel.y >= footerBox.y + footerBox.height, "page-end follows footer");
+
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(450);
+  assert.equal(
+    await page
+      .getByTestId("bottom-blur")
+      .evaluate((element) => Number(getComputedStyle(element).opacity)),
+    0,
+    "blur fades at the page bottom",
+  );
 
   await page.getByRole("button", { name: "Back to top" }).click();
   await page.waitForTimeout(900);
@@ -262,20 +407,45 @@ try {
     "footer columns stack top to bottom",
   );
   await assertNoOverflow(390);
+  await assertBanner(footer, "dark", 390);
   await runAxe("dark mobile");
 
-  await page.getByRole("button", { name: /Switch to light theme/ }).click();
-  await page.waitForFunction(() => document.documentElement.classList.contains("light"));
-  await page.waitForTimeout(200);
+  await setTheme("light");
+  await assertBanner(footer, "light", 390);
+  assert.ok(
+    bannerRequestKinds().includes("light"),
+    "light banner loads when shown",
+  );
   await runAxe("light mobile");
 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.waitForTimeout(200);
+  await assertBanner(footer, "light", 1440);
   await runAxe("light desktop");
-  await page.getByRole("button", { name: /Switch to dark theme/ }).click();
-  await page.waitForFunction(() => document.documentElement.classList.contains("dark"));
-  await page.waitForTimeout(200);
+  await setTheme("dark");
+  await assertBanner(footer, "dark", 1440);
   await runAxe("dark desktop");
+
+  for (const width of [1024, 768]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.waitForTimeout(150);
+    await setTheme("dark");
+    await assertBanner(footer, "dark", width);
+    await setTheme("light");
+    await assertBanner(footer, "light", width);
+    await assertNoOverflow(width);
+  }
+  await setTheme("dark");
+  assert.equal(
+    bannerRequestKinds().filter((kind) => kind === "dark").length,
+    1,
+    "dark banner requested once",
+  );
+  assert.equal(
+    bannerRequestKinds().filter((kind) => kind === "light").length,
+    1,
+    "light banner requested once",
+  );
 
   for (const width of [1440, 1024, 768, 390, 320]) {
     await page.setViewportSize({ width, height: 900 });
@@ -284,7 +454,7 @@ try {
   }
 
   const yearPage = await context.newPage();
-  await stub(yearPage);
+  await stub(yearPage, []);
   await yearPage.addInitScript(() => {
     const RealDate = Date;
     const fixed = "2031-05-05T12:00:00Z";
