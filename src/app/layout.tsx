@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next"
 import {
   Caveat,
   Geist_Mono,
@@ -64,6 +66,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             Skip to content
           </a>
           {children}
+          <Analytics />
+          <SpeedInsights />
         </ThemeProvider>
       </body>
     </html>
