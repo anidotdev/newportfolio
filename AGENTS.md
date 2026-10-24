@@ -35,7 +35,8 @@ prints a refresh token; see `docs/spotify-setup.md` and `docs/contact-setup.md`.
 | `src/app/{layout,page}.tsx` | Fonts/providers/metadata; hero, About, Projects, Contact, Footer, `#main-content`, `#page-end`, blur |
 | `src/app/globals.css` | Tokens, `.hero-grid`, smooth scroll, reduced motion |
 | `src/components/{site-header,mobile-menu}.tsx` | Sticky nav, active dot, palette trigger, mobile Sheet |
-| `src/components/command-palette.tsx` | Ctrl/⌘+K palette, groups, G chords, focus restore |
+| `src/components/command-palette.tsx` | Lightweight Ctrl/⌘+K provider, G chords, and focus restore; lazily loads palette UI on open |
+| `src/components/command-palette-dialog.tsx` | On-demand command dialog, searchable cmdk items, groups, actions, and palette footer |
 | `src/components/ui/{dialog,command}.tsx` | Local Radix dialog and cmdk primitives |
 | `src/lib/navigation.ts` | External/hash navigation, active-state and editable-target helpers |
 | `src/components/hero.tsx` | Banner, avatar, identity/title, social row, Spotify placement |
