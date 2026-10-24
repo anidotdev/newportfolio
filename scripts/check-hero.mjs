@@ -325,6 +325,18 @@ try {
     "profile information group should be removed",
   );
   const hero = page.locator('section[aria-labelledby="profile-name"]');
+  const identity = page.getByTestId("hero-identity");
+  const avatar = identity.getByTestId("hero-avatar");
+  const avatarButton = avatar.getByRole("button", {
+    name: "Boop the Lain mascot",
+  });
+  assert.equal(await avatar.count(), 1, "profile portrait holder should remain");
+  assert.equal(await avatarButton.count(), 1, "Lain should be interactive inside the portrait holder");
+  assert.equal(
+    await identity.locator('[aria-label="Verified"]').count(),
+    1,
+    "verified badge should remain beside the name",
+  );
   for (const text of [
     "West Bengal, India",
     "hello@example.com",
@@ -503,12 +515,34 @@ try {
       `avatar should be circular at ${width}`,
     );
 
-    const identity = await box(page.getByTestId("hero-identity"));
+    const identityBox = await box(identity);
     assert.ok(
       Math.abs(
-        avatar.y + avatar.height - (identity.y + identity.height),
+        avatar.y + avatar.height - (identityBox.y + identityBox.height),
       ) <= 1,
       `avatar bottom should equal identity bottom at ${width}`,
+    );
+
+    const mascotBox = await box(avatarButton);
+    assert.equal(
+      Math.round(mascotBox.width),
+      avatarSize,
+      `mascot should fill the portrait holder width at ${width}`,
+    );
+    assert.equal(
+      Math.round(mascotBox.height),
+      avatarSize,
+      `mascot should fill the portrait holder height at ${width}`,
+    );
+    assert.ok(
+      Math.abs(mascotBox.x - avatar.x) <= 1 &&
+        Math.abs(mascotBox.y - avatar.y) <= 1,
+      `mascot should align with the portrait holder at ${width}`,
+    );
+    const profileNameBox = await box(page.locator("#profile-name"));
+    assert.ok(
+      avatar.x + avatar.width <= profileNameBox.x + 1,
+      `portrait should not overlap the profile name at ${width}`,
     );
 
     const hatch = await box(page.getByTestId("hero-hatch"));
@@ -537,6 +571,41 @@ try {
 
     await waitForOneVisibleTitle();
   }
+
+  await avatarButton.click();
+  await page.waitForTimeout(160);
+  const mascotLayers = await avatarButton.locator("span span").evaluateAll(
+    (elements) => elements.map((element) => ({
+      opacity: getComputedStyle(element).opacity,
+      backgroundImage: getComputedStyle(element).backgroundImage,
+    })),
+  );
+  assert.equal(mascotLayers.length, 2, "mascot should render both sprite layers");
+  assert.equal(mascotLayers[0].opacity, "0", "reaction should hide the direction layer");
+  assert.equal(mascotLayers[1].opacity, "1", "reaction should show the expression layer");
+  assert.ok(
+    mascotLayers.every((layer) => layer.backgroundImage.includes("lain-")),
+    "mascot should load its local sprite sheets",
+  );
+
+  await page.setViewportSize({ width: 320, height: 900 });
+  await page.waitForTimeout(100);
+  await assertNoOverflow(320);
+  const compactName = await box(page.locator("#profile-name"));
+  const compactAvatar = await box(page.getByTestId("hero-avatar"));
+  const compactMascot = await box(avatarButton);
+  assert.ok(
+    compactAvatar.x + compactAvatar.width <= compactName.x + 1,
+    "portrait and name should not overlap at 320px",
+  );
+  assert.ok(
+    compactAvatar.x >= 0 && compactAvatar.x + compactAvatar.width <= 320,
+    "portrait should remain inside the viewport at 320px",
+  );
+  assert.ok(
+    Math.abs(compactMascot.width - compactAvatar.width) <= 1,
+    "mascot should remain scaled to the mobile portrait at 320px",
+  );
 
   spotifyMode = "last";
   await page.setViewportSize({ width: 1440, height: 900 });

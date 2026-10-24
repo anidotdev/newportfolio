@@ -215,3 +215,7 @@
     animation: none !important;
   }
 }
+/* Optically center Lain inside the circular avatar */
+.lain-avatar-mascot > span > span {
+  translate: -2.5% 3% !important;
+}

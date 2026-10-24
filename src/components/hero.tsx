@@ -6,6 +6,7 @@ import { BadgeCheck, Volume2 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 
 import { BrandIcon } from "@/components/brand-icons";
+import { AvatarMascot } from "@/components/hero-mascot";
 import { KyotoDuskBanner } from "@/components/kyoto-dusk-banner";
 import { SpotifyStatus } from "@/components/spotify-status";
 import { siteConfig } from "@/config/site";
@@ -44,7 +45,7 @@ function SocialNote({ text }: { text: string }) {
         strokeWidth="1.25"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="ml-auto mt-1 h-7 w-14 text-muted-foreground/60"
+        className="ml-auto mt-1 h-7 w-14 -scale-y-100 text-muted-foreground/60"
       >
         <path d="M4 5c13 1 26 8 34 22" />
         <path d="M29 24l9 4 1-10" />
@@ -56,40 +57,41 @@ function SocialNote({ text }: { text: string }) {
 function Banner() {
   return (
     <div className="col-[container] px-2.5 pt-1.5">
-      <div
-        data-testid="hero-banner"
-        className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-[2px] bg-muted md:h-[260px]"
-      >
-        <KyotoDuskBanner />
+      <div className="relative">
+        <div
+          data-testid="hero-banner"
+          className="relative flex h-40 w-full items-center justify-center overflow-hidden rounded-[2px] bg-muted md:h-[260px]"
+        >
+          <KyotoDuskBanner />
+        </div>
       </div>
     </div>
   );
 }
 
-function Avatar() {
+function Avatar({ mascotReady }: { mascotReady: boolean }) {
   const { hero } = siteConfig;
 
   return (
     <div
       data-testid="hero-avatar"
-      role="img"
-      aria-label={hero.avatarAlt}
-      className="absolute left-2.5 -top-10 size-24 overflow-hidden rounded-full border border-hairline bg-muted ring-4 ring-background md:-top-[68px] md:size-40"
+      role="group"
+      aria-label="Profile portrait"
+      className="absolute left-2.5 -top-10 size-24 overflow-hidden rounded-full border border-hairline bg-background md:-top-[68px] md:size-40"
     >
-      {hero.avatar ? (
+      {mascotReady ? (
+        <AvatarMascot />
+      ) : hero.avatar ? (
         <Image
           src={hero.avatar}
-          alt=""
+          alt={hero.avatarAlt}
           fill
           preload
           sizes="(max-width: 767px) 96px, 160px"
           className="object-cover"
         />
       ) : (
-        <span
-          aria-hidden="true"
-          className="flex size-full items-center justify-center font-mono text-xl font-medium tracking-[0.08em] text-muted-foreground"
-        >
+        <span className="flex size-full items-center justify-center font-mono text-xl font-medium tracking-[0.08em] text-muted-foreground">
           {hero.avatarInitials}
         </span>
       )}
@@ -97,7 +99,7 @@ function Avatar() {
   );
 }
 
-function Identity() {
+function Identity({ mascotReady }: { mascotReady: boolean }) {
   const { hero } = siteConfig;
   const reduceMotion = useReducedMotion();
   const [titleIndex, setTitleIndex] = useState(0);
@@ -138,7 +140,7 @@ function Identity() {
       data-testid="hero-identity"
       className="relative col-[container] h-14 md:h-[92px]"
     >
-      <Avatar />
+      <Avatar mascotReady={mascotReady} />
 
       <div className="ml-[110px] h-full border-l border-hairline md:ml-[174px]">
         <div className="grid h-full grid-rows-[33px_1px_22px] md:grid-rows-[48px_1px_43px]">
@@ -152,6 +154,7 @@ function Identity() {
             <BadgeCheck
               role="img"
               aria-label={hero.verifiedLabel}
+              data-testid="verified-badge"
               className="size-5 shrink-0 text-foreground"
               fill="currentColor"
               stroke="var(--background)"
@@ -244,7 +247,7 @@ function Socials() {
   );
 }
 
-export function Hero() {
+export function Hero({ mascotReady = false }: { mascotReady?: boolean }) {
   return (
     <section
       aria-labelledby="profile-name"
@@ -256,7 +259,7 @@ export function Hero() {
       />
 
       <Banner />
-      <Identity />
+      <Identity mascotReady={mascotReady} />
 
       <div
         data-testid="hero-hatch"

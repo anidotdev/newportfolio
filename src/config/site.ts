@@ -22,7 +22,6 @@ export type HeroConfig = {
   avatar: string | null;
   avatarAlt: string;
   avatarInitials: string;
-  verifiedLabel: string;
   playNameLabel: string;
   socialsLabel: string;
   socials: SocialLink[];
@@ -272,7 +271,6 @@ export const siteConfig: SiteConfig = {
     avatar: "/images/avatar.jpg",
     avatarAlt: "Animesh Gautam",
     avatarInitials: "AG",
-    verifiedLabel: "Verified",
     playNameLabel: "Play name pronunciation",
     socialsLabel: "Social links",
     socials: [

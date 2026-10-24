@@ -39,6 +39,7 @@ prints a refresh token; see `docs/spotify-setup.md` and `docs/contact-setup.md`.
 | `src/components/ui/{dialog,command}.tsx` | Local Radix dialog and cmdk primitives |
 | `src/lib/navigation.ts` | External/hash navigation, active-state and editable-target helpers |
 | `src/components/hero.tsx` | Banner, avatar, identity/title, social row, Spotify placement |
+| `src/components/hero-mascot.tsx` | Lain mascot from `page-mascot`; head tracks the pointer, click plays a reaction |
 | `src/components/kyoto-dusk-banner.tsx` | Decorative Kyoto Dusk canvas, centre-cropped |
 | `src/components/spotify-status.tsx` | Polling row, fallback, track link |
 | `src/components/about.tsx` | About rows, bio, tech stack |
@@ -80,6 +81,7 @@ prints a refresh token; see `docs/spotify-setup.md` and `docs/contact-setup.md`.
 - Bio, tech names, socials, project data, contact copy, and footer copy live in `src/config/site.ts`. Do not reintroduce the old profile information grid.
 - Replace the contact email (`hello@example.com`), `cal.com/your-handle`, and the Medium placeholder (`https://medium.com/@your-handle`) before launch. Project entries are still placeholders with `MM.YYYY` dates and `example.com` URLs; replace names, dates, copy, links, features, and tags.
 - Banner art is `kyoto-dusk` from `ascii.rest/pieces/kyoto-dusk` (MIT, © bas3line), native 200×100 at 15 fps. Do not approximate, recolour, or screenshot it. `hero.avatar` is the only image setting; null renders `SD`.
+- The mascot is Lain: two 3×3 sprite sheets at `public/mascots/lain-{directions,reactions}.webp`, built from `characters/lain/`. `src/app/page.tsx` checks both files with `existsSync` and only passes `mascotReady` when they are present. The mascot is rendered inside the existing circular profile portrait (96px mobile, 160px desktop) while the verified badge remains beside the profile name. The mascot button remains keyboard-focusable and click reactions are preserved.
 - All Playwright page tests stub `**/api/spotify` and `**/api/contact`; never call real Spotify/Resend. Do not commit credentials; `.env*` is ignored except `.env.example`.
 
 ## Verification
