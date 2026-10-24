@@ -38,6 +38,9 @@ const caveat = Caveat({
   weight: "500",
   variable: "--font-caveat",
   display: "swap",
+  // This font is used for decorative section headings and the optional social note.
+  // Keep it available without competing with the three primary above-the-fold fonts.
+  preload: false,
 });
 
 export const metadata: Metadata = {
