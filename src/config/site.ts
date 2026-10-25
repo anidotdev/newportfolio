@@ -4,7 +4,7 @@
 export const site = {
   wordmark: 'anidotdev',
   name: 'Animesh Gautam',
-  tagline: 'software, systems, and the things I’m figuring out',
+  tagline: 'ML, systems, and the things I’m figuring out',
   profileImage: '/images/avatar.jpg',
   profileImageAlt: 'Anidot wordmark avatar',
   location: 'Delhi NCR, India',
