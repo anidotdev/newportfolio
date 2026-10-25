@@ -1,0 +1,75 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const notes = (await getCollection("notes", ({ data }) => !data.draft)).sort(
+    (a, b) => a.data.order - b.data.order,
+);
+---
+
+<BaseLayout
+    title="Notes"
+    description="Notes on things I am still figuring out."
+    canonicalPath="/notes/"
+>
+    <main class="page-shell notes-shell">
+        <a class="back-link" href="/">
+            ← back home
+        </a>
+
+        <header class="page-intro notes-intro">
+            <p class="notes-kicker">WORKING NOTES</p>
+            <h1 class="page-title">Notes</h1>
+            <p class="page-deck">
+                Things I’m still thinking through, testing, or trying to explain
+                to myself.
+            </p>
+            <!-- <p class="page-note">These are allowed to be unfinished. Some are small observations; others might grow into longer posts when I understand them better.</p> -->
+        </header>
+
+        {notes.length > 0 ? (
+            <ol class="notes-list">
+                {notes.map((note, index) => (
+                    <li class="note-entry">
+                        <span class="note-index" aria-hidden="true">
+                            {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <div class="note-copy">
+                            <h2 class="note-title">
+                                <a href={`/notes/${note.id}/`}>
+                                    {note.data.title}
+                                </a>
+                            </h2>
+                            <p class="note-description">
+                                {note.data.description}
+                            </p>
+                            <!-- {note.data.tags.length > 0 && (
+                                <p class="note-tags" aria-label="Topics">
+                                    {note.data.tags.map((tag) => (
+                                        <span>{tag}</span>
+                                    ))}
+                                </p>
+                            )} -->
+                        </div>
+                        <!-- <span class="note-arrow" aria-hidden="true">
+                            ↗
+                        </span> -->
+                    </li>
+                ))}
+            </ol>
+        ) : (
+            <div class="empty-state">
+                <p>No notes published yet.</p>
+                <p>
+                    Add Markdown files to <code>src/content/notes/</code> to
+                    start collecting them here.
+                </p>
+            </div>
+        )}
+
+        <p class="notes-footnote">
+            No dates, no pressure to finish. Just a place to keep the useful
+            bits.
+        </p>
+    </main>
+</BaseLayout>

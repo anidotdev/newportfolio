@@ -10,7 +10,7 @@ export const site = {
   location: 'Delhi NCR, India',
   timezone: 'Asia/Kolkata',
   timezoneLabel: 'IST',
-  notesUrl: 'https://anidotdev.pages.dev/',
+  notesUrl: '/notes/',
   githubUrl: 'https://github.com/anidotdev',
   email: 'anidotdev@gmail.com',
   resumeUrl: '',
@@ -21,7 +21,7 @@ export const site = {
 
 export const navigation = [
   { label: 'blog', href: '/blog/' },
-  { label: 'notes', href: site.notesUrl, external: true },
+  { label: 'notes', href: site.notesUrl },
   { label: 'components', href: '/components/' },
   { label: 'github', href: site.githubUrl, external: true },
   ...(site.email ? [{ label: 'email', href: `mailto:${site.email}` }] : []),

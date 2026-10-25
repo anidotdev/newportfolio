@@ -1,0 +1,36 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('notes', ({ data }) => !data.draft);
+  return notes.map((note) => ({
+    params: { slug: note.id },
+    props: { note },
+  }));
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+---
+
+<BaseLayout
+  title={note.data.title}
+  description={note.data.description}
+  canonicalPath={`/notes/${note.id}/`}
+>
+  <main class="page-shell article-shell note-page-shell">
+    <a class="back-link" href="/notes/">← back to notes</a>
+
+    <article class="article-content note-article">
+      <header class="article-header note-article-header">
+        <p class="notes-kicker">NOTE · WORKING THOUGHT</p>
+        <h1 class="page-title article-title">{note.data.title}</h1>
+        <p class="page-deck note-article-deck">{note.data.description}</p>
+      </header>
+      <div class="prose"><Content /></div>
+    </article>
+
+    <a class="back-link article-back-bottom" href="/notes/">← back to notes</a>
+  </main>
+</BaseLayout>

@@ -50,4 +50,9 @@ Set `draft: false` when it's ready to publish. Posts are sorted newest first and
 - Set `PUBLIC_SITE_URL` to the actual production origin before deployment so canonical URLs can be generated.
 - Review the project descriptions and homepage copy before publishing.
 
-The notes site remains separate and is linked directly at <https://anidotdev.pages.dev/>. This project does not recreate or modify it.
+Notes are part of this Astro project at `/notes/`, with their own Markdown collection and individual note pages.
+
+
+## Notes
+
+The first-party notes index lives at `/notes/`. Add Markdown files to `src/content/notes/` with `title`, `description`, optional `order`, `draft`, and `tags` frontmatter. Notes do not need publication dates. Each published note is available at `/notes/<filename>/`; set `draft: true` to keep a note out of production routes.

@@ -13,7 +13,7 @@ const posts = (await getCollection('blog', ({ data }) => !data.draft))
     <header class="page-intro">
       <h1 class="page-title">Blog</h1>
       <p class="page-deck">Thoughts on programming, systems, and whatever else is on my mind.</p>
-      <p class="page-note">The rougher notes, experiments, and half-formed ideas live on <a href={site.notesUrl}>my notes site</a>. This is where the more complete write-ups will go.</p>
+      <p class="page-note">The rougher notes, experiments, and half-formed ideas live in <a href={site.notesUrl}>the notes section</a>. This is where the more complete write-ups will go.</p>
     </header>
     <BlogPostList posts={posts} />
   </main>

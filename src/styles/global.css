@@ -14,7 +14,7 @@
   --serif: "Iowan Old Style", "Palatino Linotype",
     "Book Antiqua", Georgia, serif;
   --sans: "Inter", ui-sans-serif, system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+    BlinkMacSystemFont, "Inter", ui-sans-serif;
 
   font-synthesis: none;
   font-optical-sizing: auto;
@@ -439,6 +439,137 @@ button:focus-visible {
 }
 
 /* ========================================
+   NOTES INDEX
+======================================== */
+
+.notes-intro {
+  margin-bottom: 0;
+}
+
+.notes-kicker {
+  margin: 0 0 10px;
+  color: var(--subtle);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.105em;
+  line-height: 1.5;
+  text-transform: uppercase;
+}
+
+.notes-list {
+  margin: 34px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+  list-style: none;
+}
+
+.note-entry {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 14px;
+  align-items: start;
+  column-gap: 12px;
+  padding: 21px 0 23px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.note-index {
+  padding-top: 4px;
+  color: var(--subtle);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+
+.note-copy {
+  min-width: 0;
+}
+
+.note-title {
+  margin: 0;
+  font-family: var(--sans);
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 1.28;
+}
+
+.note-title a {
+  color: var(--text);
+  text-decoration: none;
+  transition: color 130ms ease;
+}
+
+.note-title a:hover {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.note-description {
+  max-width: 58ch;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 15.5px;
+  line-height: 1.7;
+}
+
+.note-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin: 11px 0 0;
+  color: var(--subtle);
+  font-size: 11.5px;
+  letter-spacing: 0.025em;
+}
+
+.note-tags span + span::before {
+  content: "·";
+  margin-right: 12px;
+  color: var(--rule);
+}
+
+.note-arrow {
+  padding-top: 3px;
+  color: var(--subtle);
+  font-size: 13px;
+  line-height: 1.5;
+  transition: color 130ms ease, transform 130ms ease;
+}
+
+.note-entry:hover .note-arrow {
+  color: var(--text);
+  transform: translate(1px, -1px);
+}
+
+.notes-footnote {
+  margin: 23px 0 0;
+  color: var(--subtle);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+/* Individual notes share the blog's readable prose styles, without dates. */
+.note-article-header {
+  margin-bottom: 26px;
+}
+
+.note-article-header .notes-kicker {
+  margin-bottom: 12px;
+}
+
+.note-article-deck {
+  margin-top: 13px;
+}
+
+.note-page-shell .prose {
+  margin-top: 0;
+}
+
+.note-page-shell .prose h2:first-child {
+  margin-top: 0;
+}
+
+/* ========================================
    PROJECTS
 ======================================== */
 
@@ -719,6 +850,16 @@ button:focus-visible {
     padding: 21px 0 23px;
   }
 
+  .note-entry {
+    grid-template-columns: 22px minmax(0, 1fr) 12px;
+    column-gap: 10px;
+    padding: 19px 0 21px;
+  }
+
+  .note-title {
+    font-size: 21px;
+  }
+
   .post-title,
   .project-title {
     font-size: 20px;
@@ -792,5 +933,52 @@ button:focus-visible {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+  }
+}
+
+/* Blog titles: slide up smoothly into position */
+@keyframes title-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.post-list .post-title {
+  animation: title-rise 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Stagger the titles slightly */
+.post-list .post-entry:nth-child(1) .post-title {
+  animation-delay: 80ms;
+}
+
+.post-list .post-entry:nth-child(2) .post-title {
+  animation-delay: 160ms;
+}
+
+.post-list .post-entry:nth-child(3) .post-title {
+  animation-delay: 240ms;
+}
+
+.post-list .post-entry:nth-child(4) .post-title {
+  animation-delay: 320ms;
+}
+
+.post-list .post-entry:nth-child(5) .post-title {
+  animation-delay: 400ms;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .post-list .post-title {
+    animation: none;
+    opacity: 1;
+    transform: none;
   }
 }
