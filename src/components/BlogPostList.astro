@@ -1,0 +1,39 @@
+---
+interface Post {
+  id: string;
+  data: {
+    title: string;
+    pubDate: Date;
+    description: string;
+  };
+}
+
+interface Props {
+  posts: Post[];
+}
+
+const { posts } = Astro.props;
+const dateFormatter = new Intl.DateTimeFormat('en-US', {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+---
+{posts.length > 0 ? (
+  <ol class="post-list">
+    {posts.map((post) => (
+      <li class="post-entry">
+        <time class="post-date" datetime={post.data.pubDate.toISOString()}>
+          {dateFormatter.format(post.data.pubDate)}
+        </time>
+        <h2 class="post-title"><a href={`/blog/${post.id}/`}>{post.data.title}</a></h2>
+      </li>
+    ))}
+  </ol>
+) : (
+  <div class="empty-state">
+    <p>Nothing published here just yet.</p>
+    <p>I’m working through systems, LLM inference, networking, and the things I’m learning along the way. The useful write-ups will land here when they’re ready.</p>
+  </div>
+)}

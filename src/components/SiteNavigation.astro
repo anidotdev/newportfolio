@@ -1,0 +1,10 @@
+---
+import { navigation } from '../config/site';
+---
+<nav class="site-navigation" aria-label="Main navigation">
+  {navigation.map((item) => (
+    <a href={item.href} rel={'external' in item && item.external ? 'noreferrer' : undefined}>
+      {item.label}
+    </a>
+  ))}
+</nav>

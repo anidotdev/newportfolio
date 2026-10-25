@@ -1,0 +1,31 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout title="Projects" description="Selected experiments and things Animesh Gautam has been learning by building.">
+  <main class="page-shell">
+    <a class="back-link" href="/">← back home</a>
+    <header class="page-intro">
+      <h1 class="page-title">Projects</h1>
+      <p class="page-deck">A few things I’ve been exploring by building them.</p>
+    </header>
+
+    <ol class="project-list">
+      <li class="project-entry">
+        <h2 class="project-title">LLM inference notes</h2>
+        <p>Learning how language models work at inference time, from tokenization and prefill/decode to KV-cache memory use and the trade-offs behind throughput.</p>
+        <p class="project-meta">inference · systems · technical writing</p>
+      </li>
+      <li class="project-entry">
+        <h2 class="project-title">Networked systems experiments</h2>
+        <p>Small exercises around TCP connections, buffering, message framing, and the details that turn a stream of bytes into messages an application can understand.</p>
+        <p class="project-meta">networking · systems programming</p>
+      </li>
+      <li class="project-entry">
+        <h2 class="project-title">Marine AIS data exploration</h2>
+        <p>A data-focused project exploring vessel-position records, analytical queries, and geospatial tooling. The goal is to understand the full path from raw data to something useful.</p>
+        <p class="project-meta">data engineering · DuckDB · geospatial</p>
+      </li>
+    </ol>
+    <p class="project-footnote">These are learning projects and ongoing explorations, not claims of finished products. Code and notes will be linked here as I publish them.</p>
+  </main>
+</BaseLayout>

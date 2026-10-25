@@ -1,0 +1,60 @@
+---
+import Header from '../components/Header.astro';
+import { site } from '../config/site';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+  showWordmark?: boolean;
+  canonicalPath?: string;
+}
+
+const {
+  title = site.name,
+  description = site.description,
+  showWordmark = true,
+  canonicalPath = Astro.url.pathname,
+} = Astro.props;
+const pageTitle = title === site.name ? `${site.name} · ${site.wordmark}` : `${title} · ${site.wordmark}`;
+const canonicalUrl = site.siteUrl ? new URL(canonicalPath, site.siteUrl).toString() : undefined;
+---
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fbfbfa" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.wordmark} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <script is:inline>
+      (() => {
+        const root = document.documentElement;
+        let savedTheme = null;
+        try {
+          savedTheme = localStorage.getItem('theme');
+        } catch {
+          // Fall back to the system preference if storage is unavailable.
+        }
+        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        root.dataset.theme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : systemTheme;
+        const colorMeta = document.querySelector('meta[name="theme-color"]');
+        colorMeta?.setAttribute('content', root.dataset.theme === 'dark' ? '#050505' : '#fbfbfa');
+      })();
+    </script>
+  </head>
+  <body>
+    <Header showWordmark={showWordmark} />
+    <slot />
+  </body>
+</html>

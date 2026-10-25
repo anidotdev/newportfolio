@@ -1,0 +1,20 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogPostList from '../../components/BlogPostList.astro';
+import { site } from '../../config/site';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+<BaseLayout title="Blog" description="Notes on systems, LLM inference, networking, and whatever else is on Animesh Gautam’s mind.">
+  <main class="page-shell">
+    <a class="back-link" href="/">← back home</a>
+    <header class="page-intro">
+      <h1 class="page-title">Blog</h1>
+      <p class="page-deck">Thoughts on programming, systems, and whatever else is on my mind.</p>
+      <p class="page-note">The rougher notes, experiments, and half-formed ideas live on <a href={site.notesUrl}>my notes site</a>. This is where the more complete write-ups will go.</p>
+    </header>
+    <BlogPostList posts={posts} />
+  </main>
+</BaseLayout>

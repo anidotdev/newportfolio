@@ -1,0 +1,31 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import 'katex/dist/katex.min.css';
+
+interface Props {
+  title: string;
+  description: string;
+  pubDate: Date;
+}
+
+const { title, description, pubDate } = Astro.props;
+const displayDate = new Intl.DateTimeFormat('en-US', {
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+}).format(pubDate);
+---
+<BaseLayout title={title} description={description}>
+  <main class="page-shell article-shell">
+    <a class="back-link" href="/blog/">← back to blog</a>
+    <article class="article-content">
+      <header class="article-header">
+        <h1 class="page-title article-title">{title}</h1>
+        <time class="article-date" datetime={pubDate.toISOString()}>{displayDate}</time>
+      </header>
+      <div class="prose"><slot /></div>
+    </article>
+    <a class="back-link article-back-bottom" href="/blog/">← back to blog</a>
+  </main>
+</BaseLayout>

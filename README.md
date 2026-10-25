@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Anidot personal website
 
-## Getting Started
+A minimal, typography-first personal site built with Astro. The design uses a warm off-white light theme, a near-black dark theme, restrained serif headings, and a single reading column.
 
-First, run the development server:
+## Run locally
 
-```bash
+```sh
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open the local address printed by Astro. To verify the production build:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sh
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Where to edit things
 
-## Learn More
+- `src/config/site.ts` — name, tagline, location, notes URL, GitHub URL, email, résumé URL, and site description.
+- `src/pages/index.astro` — homepage biography.
+- `src/pages/projects/index.astro` — project descriptions.
+- `src/content/blog/` — add Markdown articles.
+- `src/styles/global.css` — global typography, spacing, colors, and responsive behavior.
+- `public/images/avatar.svg` — placeholder identity image. Replace it with your own portrait and update `profileImage` in `src/config/site.ts`.
 
-To learn more about Next.js, take a look at the following resources:
+## Add a blog post
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Create a Markdown file inside `src/content/blog/`, for example `first-post.md`:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```md
+---
+title: "A title that sounds like you"
+description: "A one-sentence description."
+pubDate: 2026-10-25
+draft: true
+tags: [systems]
+---
 
-## Deploy on Vercel
+Start writing here.
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Set `draft: false` when it's ready to publish. Posts are sorted newest first and the collection schema validates frontmatter. Drafts are excluded from both the archive and generated article routes.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Personal configuration still to review
+
+- Replace the placeholder avatar with a photo or illustration you own.
+- Add a public contact email if you want the email link to appear.
+- Add a résumé URL if you want it linked.
+- Set `PUBLIC_SITE_URL` to the actual production origin before deployment so canonical URLs can be generated.
+- Review the project descriptions and homepage copy before publishing.
+
+The notes site remains separate and is linked directly at <https://anidotdev.pages.dev/>. This project does not recreate or modify it.

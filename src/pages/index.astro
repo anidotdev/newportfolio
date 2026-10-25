@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteNavigation from '../components/SiteNavigation.astro';
+import { site } from '../config/site';
+
+const currentYear = new Date().getFullYear();
+---
+<BaseLayout title={site.name} description={site.description} showWordmark={false} canonicalPath="/">
+  <main class="home-shell">
+    <section class="identity-block" aria-label="Introduction">
+      <img class="profile-image" src={site.profileImage} alt={site.profileImageAlt} width="84" height="84" fetchpriority="high" />
+      <div class="identity-copy">
+        <h1 class="identity-name">{site.name}</h1>
+        <p class="identity-tagline">{site.tagline}</p>
+      </div>
+    </section>
+
+    <div class="home-copy">
+      <p>Hey, I’m Animesh. I study computer science and like understanding what happens underneath the abstractions. Lately, that means spending a lot of time with systems engineering, networking, and LLM inference, from tokenization and KV caches to the details that make software actually run.</p>
+
+      <p>Most things I learn turn into something small: a TCP server, a data pipeline, an experiment, or a write-up that explains a concept in plain English. I’ve explored geospatial data, cloud infrastructure, and developer tooling too. I’m also curious about the business side of technology and how small tools become useful products. My interests move around, but the common thread is figuring out how things work and building something useful with that understanding.</p>
+
+      <p>This is my corner of the internet for projects, technical writing, and ideas I’m still working through. I’m open to interesting collaborations and projects. You can find my code on <a href={site.githubUrl} rel="noreferrer">GitHub</a> or browse my <a href={site.notesUrl}>notes</a>.</p>
+      {site.resumeUrl && <p>My <a href={site.resumeUrl}>résumé</a> is available here.</p>}
+      {site.email && <p>For work or collaborations, email me at <a href={`mailto:${site.email}`}>{site.email}</a>.</p>}
+    </div>
+
+    <SiteNavigation />
+
+    <footer class="home-footer">
+      <span>{site.location}</span>
+      <span class="footer-separator" aria-hidden="true">·</span>
+      <time id="local-clock" aria-label={`Local time in ${site.timezoneLabel}`}>IST</time>
+    </footer>
+    <p class="copyright">© {currentYear} {site.name}</p>
+  </main>
+
+  <script define:vars={{ timezone: site.timezone, timezoneLabel: site.timezoneLabel }}>
+    const clock = document.getElementById('local-clock');
+    const updateClock = () => {
+      if (!clock) return;
+      const time = new Intl.DateTimeFormat('en-IN', {
+        hour: '2-digit', minute: '2-digit', hour12: true, timeZone: timezone,
+      }).format(new Date()).toUpperCase();
+      clock.textContent = `${time} ${timezoneLabel}`;
+    };
+    updateClock();
+    const intervalId = window.setInterval(updateClock, 60_000);
+    document.addEventListener('astro:before-swap', () => window.clearInterval(intervalId), { once: true });
+  </script>
+</BaseLayout>
