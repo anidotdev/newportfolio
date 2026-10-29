@@ -42,6 +42,6 @@ I also feel like curiosity can become a guiding purpose of anyone's life if they
 
 But I think if I had an answer back then, it would have been this.
 
-My purpose in life is to live with an insatiable curiosity, to keep exploring the world, to follow the questions that fascinate me, and remain open to changing my mind, my direction and my understanding of life. Rather than committing myself to a single destination. I want to the joy of this journey and the freedom to keep evolving the foundation of my life.
+My purpose in life is to live with an insatiable curiosity, to keep exploring the world, to follow the questions that fascinate me, and remain open to changing my mind, my direction and my understanding of life. Rather than committing myself to a single destination. I want the joy of this journey and the freedom to keep evolving the foundation of my life.
 
 Stay curious.
