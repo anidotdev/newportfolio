@@ -1,0 +1,29 @@
+---
+import { writer } from "../../data/writer";
+import SectionHeader from "./SectionHeader.astro";
+
+const { heading, paragraphs, cta } = writer.whatIWrite;
+---
+
+<section class="w-section" id="what-i-write" aria-labelledby="what-i-write-heading">
+  <div class="w-wrap">
+    <SectionHeader heading={heading} headingId="what-i-write-heading" />
+
+    <div class="w-prose" data-reveal>
+      {
+        paragraphs.map((paragraph) => (
+          <p>
+            {paragraph.segments.map((segment) =>
+              segment.emphasis ? <em>{segment.text}</em> : segment.text,
+            )}
+          </p>
+        ))
+      }
+
+      <a class="w-text-link" href={cta.href}>
+        {cta.label}
+        <span aria-hidden="true">{cta.glyph}</span>
+      </a>
+    </div>
+  </div>
+</section>

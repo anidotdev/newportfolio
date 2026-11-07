@@ -1,0 +1,60 @@
+---
+import { writer } from "../../data/writer";
+
+const { links, portfolio, menuLabel } = writer.nav;
+---
+
+<nav class="w-nav" aria-label="Writer page">
+  <div class="w-nav-bar">
+    <a class="w-wordmark" href="#top">{writer.person.wordmark}</a>
+
+    <ul class="w-nav-links">
+      {
+        links.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <a class="w-nav-portfolio" href={portfolio.href}>
+      <span aria-hidden="true">←</span>
+      {portfolio.label}
+    </a>
+
+    <details class="w-menu">
+      <summary>
+        {menuLabel}
+        <span class="w-menu-mark" aria-hidden="true">+</span>
+      </summary>
+      <div class="w-menu-panel">
+        <ul>
+          <li>
+            <a href={portfolio.href}>
+              <span aria-hidden="true">←</span>
+              {portfolio.label}
+            </a>
+          </li>
+          {
+            links.map((link) => (
+              <li>
+                <a href={link.href}>{link.label}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </details>
+  </div>
+</nav>
+
+<script>
+  const menu = document.querySelector(".w-menu");
+
+  if (menu instanceof HTMLDetailsElement) {
+    menu.addEventListener("click", (event) => {
+      if (event.target instanceof HTMLAnchorElement) menu.open = false;
+    });
+  }
+</script>

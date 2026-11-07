@@ -1,0 +1,94 @@
+---
+import "../styles/writer.css";
+import { writer } from "../data/writer";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = writer.meta.title,
+  description = writer.meta.description,
+} = Astro.props;
+
+const canonicalUrl = Astro.site
+  ? new URL("/writer/", Astro.site).toString()
+  : undefined;
+---
+
+<!doctype html>
+<html lang="en" class="writer-doc">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content={writer.meta.themeColor} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={writer.person.name} />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={writer.meta.ogTitle} />
+    <meta property="og:description" content={writer.meta.ogDescription} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={writer.meta.ogTitle} />
+    <meta name="twitter:description" content={writer.meta.ogDescription} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <script is:inline>
+      if (
+        window.matchMedia("(prefers-reduced-motion: no-preference)").matches
+      ) {
+        document.documentElement.classList.add("writer-motion");
+      }
+    </script>
+  </head>
+  <body>
+    <a class="w-skip" href="#main">Skip to content</a>
+    <div class="writer-root">
+      <slot />
+    </div>
+    <script is:inline>
+      (() => {
+        const root = document.querySelector(".writer-root");
+        if (!root) return;
+
+        const doc = document.documentElement;
+        const targets = Array.from(root.querySelectorAll("[data-reveal]"));
+
+        if (
+          !("IntersectionObserver" in window) ||
+          !doc.classList.contains("writer-motion")
+        ) {
+          doc.classList.remove("writer-motion");
+          return;
+        }
+
+        try {
+          const observer = new IntersectionObserver(
+            (entries) => {
+              for (const entry of entries) {
+                if (!entry.isIntersecting) continue;
+                entry.target.classList.add("is-revealed");
+                observer.unobserve(entry.target);
+              }
+            },
+            { rootMargin: "0px 0px -8% 0px", threshold: 0.06 },
+          );
+
+          for (const target of targets) observer.observe(target);
+        } catch {
+          doc.classList.remove("writer-motion");
+        }
+      })();
+    </script>
+  </body>
+</html>

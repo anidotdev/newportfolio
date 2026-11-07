@@ -1,0 +1,44 @@
+---
+import { writer } from "../../data/writer";
+import SectionHeader from "./SectionHeader.astro";
+
+const { heading, intro, note, entries } = writer.work;
+---
+
+<section class="w-section" id="work" aria-labelledby="work-heading">
+  <div class="w-wrap">
+    <SectionHeader
+      heading={heading}
+      intro={intro}
+      headingId="work-heading"
+    />
+
+    <div class="w-work-grid">
+      {
+        entries.map((entry, index) => (
+          <article
+            class="w-work-item"
+            data-reveal
+            style={`--reveal-delay: ${index * 60}ms`}
+          >
+            <p class="w-tag">{entry.tag}</p>
+
+            <h3>
+              {entry.href ? <a href={entry.href}>{entry.title}</a> : entry.title}
+            </h3>
+
+            <p class="w-work-context">{entry.context}</p>
+
+            {entry.href && (
+              <a class="w-read" href={entry.href}>
+                Read <span aria-hidden="true">↗</span>
+              </a>
+            )}
+          </article>
+        ))
+      }
+    </div>
+
+    <p class="w-note" data-reveal>{note}</p>
+  </div>
+</section>

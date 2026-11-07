@@ -1,0 +1,32 @@
+---
+import { writer } from "../../data/writer";
+import SectionHeader from "./SectionHeader.astro";
+
+const { heading, intro, steps } = writer.process;
+---
+
+<section class="w-section" id="process" aria-labelledby="process-heading">
+  <div class="w-wrap">
+    <SectionHeader
+      heading={heading}
+      intro={intro}
+      headingId="process-heading"
+    />
+
+    <ol class="w-process-grid">
+      {
+        steps.map((step, index) => (
+          <li
+            class="w-process-step"
+            data-reveal
+            style={`--reveal-delay: ${index * 70}ms`}
+          >
+            <p class="w-process-number" aria-hidden="true">{step.number}</p>
+            <h3>{step.title}</h3>
+            <p>{step.description}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>

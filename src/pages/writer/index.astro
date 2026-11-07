@@ -1,0 +1,29 @@
+---
+import WriterLayout from "../../layouts/WriterLayout.astro";
+import Hero from "../../components/writer/Hero.astro";
+import WorkSection from "../../components/writer/WorkSection.astro";
+import WhatIWrite from "../../components/writer/WhatIWrite.astro";
+import ProcessSection from "../../components/writer/ProcessSection.astro";
+import PointOfView from "../../components/writer/PointOfView.astro";
+import AboutSection from "../../components/writer/AboutSection.astro";
+import TestimonialsSection from "../../components/writer/TestimonialsSection.astro";
+import ContactSection from "../../components/writer/ContactSection.astro";
+import WriterFooter from "../../components/writer/WriterFooter.astro";
+import { writer } from "../../data/writer";
+---
+
+<WriterLayout>
+  <Hero />
+
+  <main id="main" tabindex="-1">
+    <WorkSection />
+    <WhatIWrite />
+    <ProcessSection />
+    <PointOfView />
+    <AboutSection />
+    {writer.testimonials.items.length > 0 && <TestimonialsSection />}
+    <ContactSection />
+  </main>
+
+  <WriterFooter />
+</WriterLayout>

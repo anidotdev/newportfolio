@@ -1,0 +1,34 @@
+---
+import { writer } from "../../data/writer";
+import SectionHeader from "./SectionHeader.astro";
+
+const { heading, items } = writer.testimonials;
+---
+
+{
+  items.length > 0 && (
+    <section class="w-section" id="testimonials" aria-labelledby="testimonials-heading">
+      <div class="w-wrap">
+        <SectionHeader heading={heading} headingId="testimonials-heading" />
+
+        <div class="w-testimonials-grid">
+          {items.map((item, index) => (
+            <figure
+              class="w-testimonial"
+              data-reveal
+              style={`--reveal-delay: ${index * 60}ms`}
+            >
+              <blockquote>
+                <p>{item.quote}</p>
+              </blockquote>
+              <figcaption>
+                <span>{item.name}</span>
+                <span>{item.role}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

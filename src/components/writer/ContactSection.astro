@@ -1,0 +1,177 @@
+---
+import { writer } from "../../data/writer";
+import SectionHeader from "./SectionHeader.astro";
+
+const {
+  heading,
+  intro,
+  formNote,
+  fields,
+  serviceOptions,
+  submitLabel,
+  submitGlyph,
+  statusOpening,
+  statusMissing,
+  directLabel,
+  email,
+  x,
+} = writer.contact;
+---
+
+<section class="w-contact" id="contact" aria-labelledby="contact-heading">
+  <div class="w-wrap">
+    <SectionHeader
+      heading={heading}
+      intro={intro}
+      headingId="contact-heading"
+      dark
+    />
+
+    <div class="w-contact-direct" data-reveal>
+      <p class="w-contact-direct-label">{directLabel}</p>
+      <a href={`mailto:${email}`}>
+        {email}
+        <span aria-hidden="true">↗</span>
+      </a>
+      <a href={x.href} target="_blank" rel="noreferrer">
+        {x.label}
+        <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+
+    <form
+      class="w-form"
+      id="contact-form"
+      action={`mailto:${email}`}
+      method="post"
+      enctype="text/plain"
+      data-recipient={email}
+      data-opening={statusOpening}
+      data-missing={statusMissing}
+      data-reveal
+    >
+      <div class="w-form-grid">
+        <div class="w-field">
+          <label for="name">{fields.name.label}</label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            placeholder={fields.name.placeholder}
+            autocomplete={fields.name.autocomplete}
+            required
+          />
+        </div>
+
+        <div class="w-field">
+          <label for="work-email">{fields.workEmail.label}</label>
+          <input
+            id="work-email"
+            name="workEmail"
+            type="email"
+            placeholder={fields.workEmail.placeholder}
+            autocomplete={fields.workEmail.autocomplete}
+            required
+          />
+        </div>
+
+        <div class="w-field">
+          <label for="company">{fields.company.label}</label>
+          <input
+            id="company"
+            name="company"
+            type="text"
+            placeholder={fields.company.placeholder}
+            autocomplete={fields.company.autocomplete}
+          />
+        </div>
+
+        <div class="w-field">
+          <label for="service">{fields.service.label}</label>
+          <div class="w-select-wrap">
+            <select id="service" name="service">
+              {
+                serviceOptions.map((option, index) => (
+                  <option value={option} selected={index === 0}>
+                    {option}
+                  </option>
+                ))
+              }
+            </select>
+            <span class="w-select-mark" aria-hidden="true">↓</span>
+          </div>
+        </div>
+
+        <div class="w-field w-field--full">
+          <label for="message">{fields.message.label}</label>
+          <textarea
+            id="message"
+            name="message"
+            rows="5"
+            placeholder={fields.message.placeholder}
+            required
+          ></textarea>
+        </div>
+      </div>
+
+      <button class="w-btn w-btn--solid-light w-form-submit" type="submit">
+        {submitLabel}
+        <span class="w-btn-glyph" aria-hidden="true">{submitGlyph}</span>
+      </button>
+
+      <p class="w-form-status" role="status" aria-live="polite"></p>
+      <p class="w-form-note">{formNote}</p>
+    </form>
+  </div>
+</section>
+
+<script>
+  const form = document.querySelector("#contact-form");
+
+  if (form instanceof HTMLFormElement) {
+    const status = form.querySelector(".w-form-status");
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        if (status) status.textContent = form.dataset.missing || "";
+        return;
+      }
+
+      const data = new FormData(form);
+      const value = (key: string) => String(data.get(key) || "").trim();
+
+      const name = value("name");
+      const workEmail = value("workEmail");
+      const company = value("company");
+      const service = value("service");
+      const message = value("message");
+
+      if (!name || !workEmail || !message) {
+        if (status) status.textContent = form.dataset.missing || "";
+        return;
+      }
+
+      const subject = `Project inquiry — ${company || name}`;
+      const body = [
+        `Name: ${name}`,
+        `Work email: ${workEmail}`,
+        `Company / site: ${company || "—"}`,
+        `Service: ${service || "—"}`,
+        "",
+        message,
+      ].join("\r\n");
+
+      const recipient = form.dataset.recipient || "";
+      const href =
+        `mailto:${recipient}` +
+        `?subject=${encodeURIComponent(subject)}` +
+        `&body=${encodeURIComponent(body)}`;
+
+      if (status) status.textContent = form.dataset.opening || "";
+      window.location.href = href;
+    });
+  }
+</script>

@@ -1,0 +1,39 @@
+---
+import { writer } from "../../data/writer";
+import SectionHeader from "./SectionHeader.astro";
+
+const { heading, paragraphs, details } = writer.about;
+---
+
+<section class="w-section" id="about" aria-labelledby="about-heading">
+  <div class="w-wrap">
+    <SectionHeader heading={heading} headingId="about-heading" />
+
+    <div class="w-about-grid">
+      <div class="w-about-copy">
+        {
+          paragraphs.map((paragraph, index) => (
+            <p
+              class:list={["w-about-paragraph", { "w-about-lead": index === 0 }]}
+              data-reveal
+              style={`--reveal-delay: ${index * 60}ms`}
+            >
+              {paragraph}
+            </p>
+          ))
+        }
+      </div>
+
+      <dl class="w-about-details" data-reveal>
+        {
+          details.map((detail) => (
+            <div>
+              <dt>{detail.label}</dt>
+              <dd>{detail.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+</section>

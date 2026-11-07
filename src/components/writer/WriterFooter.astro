@@ -1,0 +1,16 @@
+---
+import { writer } from "../../data/writer";
+
+const year = new Date().getFullYear();
+const { backLabel, backGlyph } = writer.footer;
+---
+
+<footer class="w-footer">
+  <div class="w-wrap w-footer-row">
+    <p>© {year} {writer.person.name}</p>
+    <a href="/">
+      {backLabel}
+      <span aria-hidden="true">{backGlyph}</span>
+    </a>
+  </div>
+</footer>

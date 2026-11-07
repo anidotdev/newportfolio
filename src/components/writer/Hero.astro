@@ -1,0 +1,85 @@
+---
+import { getImage } from "astro:assets";
+import heroMesa from "../../assets/writer/herio-mesa.jpg";
+import { writer } from "../../data/writer";
+import WriterNav from "./WriterNav.astro";
+
+const { headline, subheading, primaryCta, secondaryCta, imageAlt } =
+  writer.hero;
+
+const widths = [800, 1280, 1920, 2560];
+const sizes = "100vw";
+
+const heroAvif = await getImage({
+  src: heroMesa,
+  widths,
+  sizes,
+  format: "avif",
+  quality: 60,
+});
+
+const heroWebp = await getImage({
+  src: heroMesa,
+  widths,
+  sizes,
+  format: "webp",
+  quality: 72,
+});
+
+const heroFallback = await getImage({
+  src: heroMesa,
+  width: 1920,
+  format: "jpg",
+  quality: 78,
+});
+---
+
+<header class="w-hero" id="top">
+  <WriterNav />
+
+  <div class="w-wrap w-hero-content">
+    <h1 class="w-hero-title" data-hero style="--hero-i: 0">
+      {headline.before}<em>{headline.emphasis}</em>{headline.after}
+    </h1>
+
+    <p class="w-hero-sub" data-hero style="--hero-i: 1">{subheading}</p>
+
+    <div class="w-hero-actions" data-hero style="--hero-i: 2">
+      <a class="w-btn w-btn--solid-light" href={primaryCta.href}>
+        {primaryCta.label}
+        <span class="w-btn-glyph" aria-hidden="true">{primaryCta.glyph}</span>
+      </a>
+      <a class="w-btn w-btn--ghost-light w-btn--down" href={secondaryCta.href}>
+        {secondaryCta.label}
+        <span class="w-btn-glyph" aria-hidden="true">{secondaryCta.glyph}</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="w-hero-art">
+    <picture>
+      <source
+        type="image/avif"
+        srcset={heroAvif.srcSet.attribute}
+        sizes={sizes}
+      />
+      <source
+        type="image/webp"
+        srcset={heroWebp.srcSet.attribute}
+        sizes={sizes}
+      />
+      <img
+        class="w-hero-img"
+        src={heroFallback.src}
+        alt={imageAlt}
+        width={heroMesa.width}
+        height={heroMesa.height}
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
+      />
+    </picture>
+  </div>
+
+  <div class="w-hero-fade" aria-hidden="true"></div>
+</header>

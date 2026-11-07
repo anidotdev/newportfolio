@@ -1,0 +1,45 @@
+---
+import { writer } from "../../data/writer";
+
+const {
+  statement,
+  beforeLabel,
+  beforeCopy,
+  afterLabel,
+  afterCopy,
+  closing,
+  note,
+} = writer.pointOfView;
+---
+
+<section class="w-pov" id="point-of-view" aria-labelledby="pov-heading">
+  <div class="w-wrap">
+    <div class="w-pov-head" data-reveal>
+      <h2 id="pov-heading">
+        {statement.before}<em>{statement.emphasis}</em>{statement.after}
+      </h2>
+    </div>
+
+    <div class="w-rewrite" data-reveal>
+      <div class="w-rewrite-panels">
+        <figure class="w-rewrite-panel">
+          <figcaption>{beforeLabel}</figcaption>
+          <blockquote>
+            <p>{beforeCopy}</p>
+          </blockquote>
+        </figure>
+
+        <figure class="w-rewrite-panel w-rewrite-panel--after">
+          <figcaption>{afterLabel}</figcaption>
+          <blockquote>
+            <p>{afterCopy}</p>
+          </blockquote>
+        </figure>
+      </div>
+
+      <p class="w-rewrite-note">{note}</p>
+    </div>
+
+    <p class="w-pov-closing" data-reveal>{closing}</p>
+  </div>
+</section>

@@ -1,0 +1,15 @@
+---
+interface Props {
+  heading: string;
+  intro?: string;
+  dark?: boolean;
+  headingId?: string;
+}
+
+const { heading, intro, dark = false, headingId } = Astro.props;
+---
+
+<div class:list={["w-section-head", { "w-section-head--dark": dark }]} data-reveal>
+  <h2 id={headingId}>{heading}</h2>
+  {intro && <p class="w-section-intro">{intro}</p>}
+</div>
