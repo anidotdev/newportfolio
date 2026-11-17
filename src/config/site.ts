@@ -4,7 +4,7 @@
 export const site = {
   wordmark: 'anidotdev',
   name: 'Animesh Gautam',
-  tagline: 'ML, systems, and the things I’m figuring out',
+  tagline: 'Backend, systems, and the things I’m figuring out',
   profileImage: '/images/avatar.jpg',
   profileImageAlt: 'Anidot wordmark avatar',
   location: 'Delhi NCR, India',
@@ -12,11 +12,11 @@ export const site = {
   timezoneLabel: 'IST',
   notesUrl: '/notes/',
   githubUrl: 'https://github.com/anidotdev',
-  email: 'anidotdev@gmail.com',
+  email: 'hi@animeshgautam.dev',
   resumeUrl: '',
   siteUrl: import.meta.env.PUBLIC_SITE_URL ?? '',
   description:
-    'I write about machine learning, systems programming and anything else that excites me.',
+    'I write about backend, ML, systems programming and anything else that excites me.',
 } as const;
 
 export const navigation = [
